@@ -17,7 +17,7 @@ import java.util.UUID;
 public class InvestChapter {
 
     @Id
-    private UUID chapterId;
+    private String chapterId;
 
     private String chapterName;
 
