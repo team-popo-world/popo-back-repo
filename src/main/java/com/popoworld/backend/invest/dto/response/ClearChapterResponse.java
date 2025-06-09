@@ -7,8 +7,6 @@ import lombok.NoArgsConstructor;
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
-public class ChapterDataResponse {
-    private String sessionId;
-    private String story;
-
+public class ClearChapterResponse {
+    private String message;
 }

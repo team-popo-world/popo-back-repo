@@ -1,3 +1,5 @@
+
+
 package com.popoworld.backend.invest.dto.response;
 
 import lombok.AllArgsConstructor;
@@ -7,6 +9,8 @@ import lombok.NoArgsConstructor;
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
-public class ClearChapterResponse {
-    private String message;
+public class ChapterDataResponse {
+    private String sessionId;
+    private String story;
+
 }
