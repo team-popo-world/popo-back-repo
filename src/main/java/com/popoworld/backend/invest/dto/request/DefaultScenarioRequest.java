@@ -7,9 +7,8 @@ import lombok.NoArgsConstructor;
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
-public class ClearChapterRequest {
+public class DefaultScenarioRequest {
     private String chapterId;
-    private String sessionId;
-    private Boolean success;
-    private Integer profit;
+    private String story;
+    private Boolean isCustom;
 }
