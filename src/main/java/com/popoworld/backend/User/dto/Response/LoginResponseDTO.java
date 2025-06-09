@@ -11,4 +11,12 @@ public class LoginResponseDTO {
     private String role;
     private String name;
     private int point;
+
+    public LoginResponseDTO(String accessToken, String refreshToken, String role, String name, int point) {
+        this.accessToken = accessToken;
+        this.refreshToken = refreshToken;
+        this.role = role;
+        this.name = name;
+        this.point = point;
+    }
 }
