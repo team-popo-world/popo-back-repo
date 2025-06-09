@@ -15,7 +15,7 @@ import java.util.UUID;
 @Getter
 @Setter
 @Entity
-@Table(name = "User")
+@Table(name = "users")
 public class User {
     @Id
     @GeneratedValue
@@ -29,7 +29,9 @@ public class User {
     private String name;
     private String role; // Parent or Child
     private String parentCode;
-    private UUID parentId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "parent_id")
+    private User parent;
     private int point;
     @CreationTimestamp
     private LocalDateTime createdAt;

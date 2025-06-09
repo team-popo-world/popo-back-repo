@@ -1,7 +1,6 @@
 package com.popoworld.backend.User.controller;
 
 import com.popoworld.backend.User.dto.Request.*;
-import com.popoworld.backend.User.dto.Response.EmailVerificationCompleteDTO;
 import com.popoworld.backend.User.dto.Response.LoginResponseDTO;
 import com.popoworld.backend.User.dto.Response.RefreshTokenResponseDTO;
 import com.popoworld.backend.User.service.UserService;
@@ -51,17 +50,4 @@ public class UserController {
         return ResponseEntity.ok(tokens);
     }
 
-    @Operation(summary = "이메일 인증 메일 발송", description = "입력된 이메일로 인증 메일을 발송합니다.")
-    @PostMapping("/email/verify")
-    public ResponseEntity<?> sendVerificationMail(@RequestBody @Valid EmailVerificationRequestDTO requestDto) {
-        userService.sendVerificationEmail(requestDto);
-        return ResponseEntity.ok("인증 메일을 보냈어요!");
-    }
-
-    @Operation(summary = "이메일 인증 완료", description = "사용자가 인증 메일의 링크를 클릭해 인증을 완료합니다.")
-    @PostMapping("/email/verify/complete")
-    public ResponseEntity<?> completeEmailVerification(@RequestBody @Valid EmailVerificationCompleteDTO requestDto) {
-        userService.completeEmailVerification(requestDto);
-        return ResponseEntity.ok("이메일 인증이 완료되었어요!");
-    }
 }
