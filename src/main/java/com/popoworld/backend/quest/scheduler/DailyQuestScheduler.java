@@ -27,8 +27,8 @@ public class DailyQuestScheduler {
     /**
      * 매일 자정에 일일퀘스트 리셋 및 부모퀘스트 만료 처리
      */
-//    @Scheduled(cron = "0 0 0 * * *")
-    @Scheduled(cron = "0 * * * * *")
+    @Scheduled(cron = "0 0 0 * * *")
+//    @Scheduled(cron = "0 * * * * *")
     @Transactional
     public void dailyMaintenance() {
         log.info("🎮 일일 유지보수 시작 - {}", LocalDateTime.now());
