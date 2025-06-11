@@ -1,6 +1,7 @@
 package com.popoworld.backend.User.controller;
 
 import com.popoworld.backend.User.dto.Request.*;
+import com.popoworld.backend.User.dto.Response.ChildLoginResponseDTO;
 import com.popoworld.backend.User.dto.Response.LoginResponseDTO;
 import com.popoworld.backend.User.dto.Response.RefreshTokenResponseDTO;
 import com.popoworld.backend.User.service.UserService;
@@ -33,6 +34,7 @@ public class UserController {
     @PostMapping("/login")
     public ResponseEntity<LoginResponseDTO> login(@RequestBody @Valid LoginRequestDTO requestDto) {
         LoginResponseDTO responseDto = userService.login(requestDto);
+
         return ResponseEntity.ok(responseDto);
     }
 

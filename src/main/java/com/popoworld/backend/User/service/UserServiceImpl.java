@@ -15,6 +15,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
 import java.time.Instant;
+import java.util.List;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -26,6 +28,7 @@ public class UserServiceImpl implements UserService {
     private final PasswordEncoder passwordEncoder;
     private final JwtTokenProvider jwtTokenProvider;
 
+    // 공통로직
     @Override
     public void signup(SignupRequestDTO requestDto) {
         if (userRepository.existsByEmail(requestDto.getEmail())) {
@@ -39,14 +42,34 @@ public class UserServiceImpl implements UserService {
         user.setSex(requestDto.getSex());
         user.setAge(requestDto.getAge());
         user.setRole(requestDto.getRole());
-        user.setParentCode(requestDto.getParentCode());
+
+
+        // 역할에 따라 분기
+        if ("Parent".equalsIgnoreCase(requestDto.getRole())) {
+            // 부모일 경우 parentCode 자동 생성
+            // 코드 중복 검사
+            String generatedCode;
+            do {
+                generatedCode = UUID.randomUUID().toString().substring(0, 8);
+            } while (userRepository.existsByParentCode(generatedCode));
+            user.setParentCode(generatedCode);
+            user.setParent(null);
+        } else if ("Child".equalsIgnoreCase(requestDto.getRole())) {
+            // 자식일 경우 parentCode로 부모 찾기
+            User parent = userRepository.findByParentCode(requestDto.getParentCode())
+                    .orElseThrow(() -> new IllegalArgumentException("유효한 부모 코드가 아니에요."));
+            user.setParentCode(requestDto.getParentCode()); // 입력값 저장
+            user.setParent(parent); // FK 설정
+            user.setPoint(10000); // 초기 포인트 설정
+        } else {
+            throw new IllegalArgumentException("role 값은 'Parent' 또는 'Child'만 가능합니다.");
+        }
 
         userRepository.save(user);
-
     }
 
-    @PostMapping("/login")
-    public LoginResponseDTO login(@RequestBody LoginRequestDTO requestDto) {
+    @Override
+    public LoginResponseDTO login(LoginRequestDTO requestDto) {
         // 비밀번호 검증 (간단히 구현한다고 가정)
         User user = userRepository.findByEmail(requestDto.getEmail())
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 사용자입니다."));
@@ -56,7 +79,7 @@ public class UserServiceImpl implements UserService {
         }
 
         // 토큰 생성
-        String accessToken = jwtTokenProvider.generateAccessToken(user.getEmail());
+        String accessToken = jwtTokenProvider.generateAccessToken(user);
         String refreshToken = jwtTokenProvider.generateRefreshToken(user.getEmail());
 
         // RefreshToken 저장
@@ -67,13 +90,27 @@ public class UserServiceImpl implements UserService {
         refreshTokenRepository.save(tokenEntity);
 
         // 로그인 응답
-        return new LoginResponseDTO(
-                accessToken,
-                refreshToken,
-                user.getRole(),
-                user.getName(),
-                user.getPoint()
-        );
+        if ("Parent".equalsIgnoreCase(user.getRole())) {
+            List<User> children = userRepository.findAllByParent(user);
+            return new ParentLoginResponseDTO(
+                    accessToken,
+                    refreshToken,
+                    user.getRole(),
+                    user.getName(),
+                    user.getParentCode(),
+                    children
+            );
+        } else if ("Child".equalsIgnoreCase(user.getRole())) {
+            return new ChildLoginResponseDTO(
+                    accessToken,
+                    refreshToken,
+                    user.getRole(),
+                    user.getName(),
+                    user.getPoint()
+            );
+        } else {
+            throw new IllegalArgumentException("role 값은 'Parent' 또는 'Child'만 가능합니다.");
+        }
     }
 
     @Override
@@ -95,9 +132,13 @@ public class UserServiceImpl implements UserService {
         RefreshToken savedToken = refreshTokenRepository.findByToken(requestToken)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 리프레시 토큰입니다."));
 
-        // 새로운 토큰 생성
+        // 이메일로 사용자 조회
         String userEmail = savedToken.getUserEmail();
-        String newAccessToken = jwtTokenProvider.generateAccessToken(userEmail);
+        User user = userRepository.findByEmail(userEmail)
+                .orElseThrow(() -> new IllegalArgumentException("해당 이메일의 사용자를 찾을 수 없습니다."));
+
+        // 새로운 토큰 생성
+        String newAccessToken = jwtTokenProvider.generateAccessToken(user);
         String newRefreshToken = jwtTokenProvider.generateRefreshToken(userEmail);
 
         // 기존 토큰 갱신
@@ -106,4 +147,28 @@ public class UserServiceImpl implements UserService {
 
         return new RefreshTokenResponseDTO(newAccessToken, newRefreshToken);
     }
+
+
+
+
+
+
+
+
+
+    // 부모
+
+
+
+
+
+
+
+
+
+
+
+
+    // 자식
+
 }
