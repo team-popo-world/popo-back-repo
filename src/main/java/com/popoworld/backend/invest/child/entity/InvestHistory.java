@@ -58,6 +58,9 @@ public class InvestHistory {
 
     private Integer minusClick;
 
+    @NotNull
+    private String newsTag;
+
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private LocalDateTime startedAt;
 

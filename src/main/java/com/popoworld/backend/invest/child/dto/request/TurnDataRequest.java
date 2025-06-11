@@ -49,4 +49,7 @@ public class TurnDataRequest {
 
     @JsonProperty("minus_click")
     private Integer minusClick;
+
+    @JsonProperty("news_tag")
+    private String newsTag;
 }
