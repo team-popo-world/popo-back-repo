@@ -14,10 +14,11 @@ public interface UserRepository extends JpaRepository<User, UUID> {
 
     Optional<User> findByEmail(String email);
 
-    Optional<User> findByParentCode(String parentCode);
 
     @Query("SELECT u FROM User u WHERE u.parent.userId = :parentId AND u.role = 'Child'")
     List<User> findAllChildrenByParentId(@Param("parentId") UUID parentId);
 
     boolean existsByParentCode(String parentCode);
+
+    Optional<User> findByParentCodeAndRole(String parentCode, String role);
 }

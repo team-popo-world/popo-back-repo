@@ -55,7 +55,7 @@ public class UserServiceImpl implements UserService {
             user.setParent(null);
         } else if ("Child".equalsIgnoreCase(requestDto.getRole())) {
             // 자식일 경우 parentCode로 부모 찾기
-            User parent = userRepository.findByParentCode(requestDto.getParentCode())
+            User parent = userRepository.findByParentCodeAndRole(requestDto.getParentCode(), "Parent")
                     .orElseThrow(() -> new IllegalArgumentException("유효한 부모 코드가 아니에요."));
             user.setParentCode(requestDto.getParentCode()); // 입력값 저장
             user.setParent(parent); // FK 설정
