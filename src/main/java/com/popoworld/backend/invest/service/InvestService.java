@@ -18,6 +18,8 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.util.List;
+import java.util.Random;
 import java.util.UUID;
 
 @Service
@@ -29,10 +31,31 @@ public class InvestService {
     private final InvestHistoryKafkaProducer investHistoryKafkaProducer;
 
     public ChapterDataResponse getChapterDataAndCreateSession(String chapterId){
-        // 1. 시나리오 조회
-        InvestScenario scenario = investScenarioRepository.findByInvestChapter_ChapterId(chapterId);
-        if(scenario==null){
-            throw new RuntimeException("해당 챕터 시나리오를 찾을 수 없습니다.");
+        // 1. 시나리오 조회 (우선순위: 커스텀 시나리오 > 기본 시나리오)
+        InvestScenario selectedScenario = null;
+
+        //1-1. 먼저 커스텀 시나리오들 조회 (isCustom = true)
+        List<InvestScenario>customScenarios = investScenarioRepository.findByInvestChapter_ChapterIdAndIsCustom(chapterId,true);
+
+        if(!customScenarios.isEmpty()){
+            //커스텀 시나리오가 있으면 그 중에서 랜덤으로 선택
+            Random random = new Random();
+            int randomIndex = random.nextInt(customScenarios.size());
+            selectedScenario = customScenarios.get(randomIndex);
+        }
+        else{
+            //1-2. 커스텀 시나리오가 없으면 기본 시나리오들 조회
+            List<InvestScenario> defaultScenarios = investScenarioRepository.findByInvestChapter_ChapterIdAndIsCustom(chapterId,false);
+            if(!defaultScenarios.isEmpty()){
+                //기본 시나리오 중에서 랜덤으로 선택
+                Random random = new Random();
+                int randomIndex = random.nextInt(defaultScenarios.size());
+                selectedScenario = defaultScenarios.get(randomIndex);
+            }
+            //시나리오를 찾지 못한 경우
+            if(selectedScenario ==null){
+                throw new RuntimeException("해당 챕터 시나리오를 찾지 못했습니다.");
+            }
         }
         // 2. 새로운 게임 세션 생성
         UUID sessionId = UUID.randomUUID();
@@ -47,14 +70,14 @@ public class InvestService {
                 null,             // endedAt - 아직 게임이 안 끝남
                 null,             // success - 아직 모름
                 null,             // profit - 아직 모름
-                scenario          // 조회한 scenario 객체
+                selectedScenario          // 조회한 scenario 객체
         );
 
         // 3. 세션 저장
         investSessionRepository.save(newSession);
 
         // 4. 응답 DTO 반환
-        return new ChapterDataResponse(sessionId.toString(), scenario.getStory());
+        return new ChapterDataResponse(sessionId.toString(), selectedScenario.getStory());
     }
 
     public ClearChapterResponse clearChapter(String chapterId, ClearChapterRequest request){
@@ -117,6 +140,7 @@ public class InvestService {
                 request.getTransactionType(),
                 request.getPlusClick(),
                 request.getMinusClick(),
+                request.getNewsTag(),
                 startedAt,
                 endedAt
         );

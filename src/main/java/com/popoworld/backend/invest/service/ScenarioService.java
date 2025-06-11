@@ -2,7 +2,9 @@ package com.popoworld.backend.invest.service;
 
 import com.popoworld.backend.invest.dto.request.CustomScenarioRequest;
 import com.popoworld.backend.invest.dto.request.DefaultScenarioRequest;
+import com.popoworld.backend.invest.entity.InvestChapter;
 import com.popoworld.backend.invest.entity.InvestScenario;
+import com.popoworld.backend.invest.repository.InvestChapterRepository;
 import com.popoworld.backend.invest.repository.InvestScenarioRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -17,12 +19,18 @@ import java.util.UUID;
 public class ScenarioService {
 
     private final InvestScenarioRepository investScenarioRepository;
-
+    private final InvestChapterRepository investChapterRepository;
     /**
      * ML에서 생성된 기본 시나리오 저장
      */
     public String createDefaultScenario(DefaultScenarioRequest request) {
         try {
+            // 1. chapterId로 InvestChapter 엔티티 조회
+            InvestChapter chapter = investChapterRepository.findById(request.getChapterId()).orElse(null);
+            if (chapter == null) {
+                throw new RuntimeException("해당 챕터 ID를 찾을 수 없습니다: " + request.getChapterId());
+            }
+
             // 백엔드에서 설정하는 값들
             UUID scenarioId = UUID.randomUUID();
             UUID childId = UUID.fromString("c1111111-2222-3333-4444-555555555555"); // 임시 childId
@@ -36,7 +44,7 @@ public class ScenarioService {
                     request.getIsCustom(),
                     now,        // createdAt - 생성 시간
                     null,       // updatedAt - 생성 시에는 null
-                    null,       // investChapter - chapterId로 연결할 수도 있음
+                    chapter,       // investChapter - chapterId로 연결할 수도 있음
                     new ArrayList<>() // investSessions
             );
 

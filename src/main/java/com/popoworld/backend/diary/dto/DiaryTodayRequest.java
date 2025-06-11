@@ -12,6 +12,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class DiaryTodayRequest {
+//    private String accessToken;
     private Emotion emotion;
     private String description;
 }
