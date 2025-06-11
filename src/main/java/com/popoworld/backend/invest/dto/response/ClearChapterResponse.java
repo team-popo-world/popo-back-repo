@@ -9,4 +9,4 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class ClearChapterResponse {
     private String message;
-    }
+}

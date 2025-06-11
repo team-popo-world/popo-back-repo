@@ -8,14 +8,16 @@ import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
-@AllArgsConstructor
-@NoArgsConstructor
 @Getter
 @Setter
+@NoArgsConstructor
+@AllArgsConstructor
 @Entity
-@Table(name = "User")
+@Table(name = "users")
 public class User {
     @Id
     @GeneratedValue
@@ -27,10 +29,17 @@ public class User {
     private String sex;
     private int age;
     private String name;
-    private String role; // Parent or Child
+    private String role; // "Parent" or "Child"
     private String parentCode;
-    private UUID parentId;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "parent_id")
+    private User parent;
+
     private int point;
+
     @CreationTimestamp
     private LocalDateTime createdAt;
+
 }
+
