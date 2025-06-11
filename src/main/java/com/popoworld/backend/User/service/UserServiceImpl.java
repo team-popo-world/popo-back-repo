@@ -1,6 +1,7 @@
 package com.popoworld.backend.User.service;
 
 import com.popoworld.backend.User.User;
+import com.popoworld.backend.User.dto.ChildInfoDTO;
 import com.popoworld.backend.User.repository.RefreshTokenRepository;
 import com.popoworld.backend.User.repository.UserRepository;
 import com.popoworld.backend.User.dto.Request.*;
@@ -11,8 +12,6 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 
 import java.time.Instant;
 import java.util.List;
@@ -70,7 +69,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public LoginResponseDTO login(LoginRequestDTO requestDto) {
-        // 비밀번호 검증 (간단히 구현한다고 가정)
+        // 비밀번호 검증
         User user = userRepository.findByEmail(requestDto.getEmail())
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 사용자입니다."));
 
@@ -91,14 +90,16 @@ public class UserServiceImpl implements UserService {
 
         // 로그인 응답
         if ("Parent".equalsIgnoreCase(user.getRole())) {
-            List<User> children = userRepository.findAllByParent(user);
+            List<User> children = userRepository.findAllChildrenByParentId(user.getUserId());
             return new ParentLoginResponseDTO(
                     accessToken,
                     refreshToken,
                     user.getRole(),
                     user.getName(),
                     user.getParentCode(),
-                    children
+                    children.stream()
+                            .map(c -> ChildInfoDTO.builder().user(c).build())
+                            .toList()
             );
         } else if ("Child".equalsIgnoreCase(user.getRole())) {
             return new ChildLoginResponseDTO(

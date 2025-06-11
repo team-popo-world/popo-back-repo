@@ -36,16 +36,10 @@ public class User {
     @JoinColumn(name = "parent_id")
     private User parent;
 
-    @OneToMany(mappedBy = "parent", cascade = CascadeType.ALL)
-    private List<User> children = new ArrayList<>();
-
     private int point;
 
     @CreationTimestamp
     private LocalDateTime createdAt;
 
-    public UUID getParentId() {
-        return parent != null ? parent.getUserId() : null;
-    }
 }
 
