@@ -37,10 +37,13 @@ public class WebSecurityConfig {
                                         "/swagger-ui.html",
                                         "/swagger-ui/**"
                                 ).permitAll()
-                                // 누구나 가능
+                                // 로그인 회원가입만 접근 가능 나머지는 인증 해야함
+//                                .requestMatchers(
+//                                        "/auth/signup",
+//                                        "/auth/login").permitAll()
                                 .requestMatchers(
-                                        "/auth/signup",
-                                        "/auth/login").permitAll()
+                                        "/**"
+                                ).permitAll()
                                 .anyRequest().authenticated()
                 )
                 .addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider), UsernamePasswordAuthenticationFilter.class)
