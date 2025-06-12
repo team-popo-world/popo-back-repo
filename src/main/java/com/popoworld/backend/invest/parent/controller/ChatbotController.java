@@ -17,8 +17,13 @@ import org.springframework.web.bind.annotation.RestController;
 public class ChatbotController {
 
 //    @Operation(summary = "채팅 입력", description = "채팅으로 시나리오 업데이트 요청")
-//    @PostMapping("/input")
+//    @PostMapping("/message")
 //    public ResponseEntity<?> chat(@RequestBody ChatbotRequestDTO) {
+//        //요청데이터
+//
+//        //ml fastapi 호출
+//
+//        //응답 반환
 //
 //    }
 }

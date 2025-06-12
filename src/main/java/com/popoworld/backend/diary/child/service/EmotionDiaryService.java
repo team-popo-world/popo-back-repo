@@ -26,9 +26,9 @@ public class EmotionDiaryService {
 
         //오늘 이미 일기가 있는지 확인
         LocalDate today = LocalDate.now();
-        if(emotionDiaryRepository.existsByChildIdAndCreatedAt(childId,today)){
-            throw new IllegalArgumentException("오늘 이미 감정일기를 작성했습니다.");
-        }
+//        if(emotionDiaryRepository.existsByChildIdAndCreatedAt(childId,today)){
+//            throw new IllegalArgumentException("오늘 이미 감정일기를 작성했습니다.");
+//        }
 
         EmotionDiary emotionDiary =new EmotionDiary(
                 null,
