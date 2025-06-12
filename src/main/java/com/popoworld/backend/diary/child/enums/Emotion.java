@@ -4,7 +4,7 @@ public enum Emotion {
     HAPPY,//기쁨
     ANGRY, //화남
     SAD,//슬픔
-    COFUSED,//당황
+    CONFUSED,//당황
     LOVE, //사랑
     CALM //평온
 }
