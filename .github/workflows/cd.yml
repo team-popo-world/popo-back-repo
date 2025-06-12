@@ -45,16 +45,6 @@ jobs:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USERNAME }}
           key: ${{ secrets.EC2_SSH_KEY }}
-          script: |
-             cat <<EOF > /home/ubuntu/back-repo/.env
-             DB_URL=${{ secrets.DB_URL }}
-             DB_USERNAME=${{ secrets.DB_USERNAME }}
-             DB_PASSWORD=${{ secrets.DB_PASSWORD }}
-             MONGODB_URI=${{ secrets.MONGODB_URI }}
-             KAFKA_BOOTSTRAP=${{ secrets.KAFKA_BOOTSTRAP }}
-             KAFKA_GROUP_ID=${{ secrets.KAFKA_GROUP_ID }}
-             EOF
-
 
       - name: SSH to EC2 and redeploy Docker container
         uses: appleboy/ssh-action@v1.0.0

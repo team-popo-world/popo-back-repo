@@ -9,6 +9,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -35,7 +36,14 @@ public class UserController {
     public ResponseEntity<LoginResponseDTO> login(@RequestBody @Valid LoginRequestDTO requestDto) {
         LoginResponseDTO responseDto = userService.login(requestDto);
 
-        return ResponseEntity.ok(responseDto);
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("Authorization", "Bearer " + responseDto.getAccessToken());
+        headers.set("Refresh-Token", responseDto.getRefreshToken());
+
+        responseDto.setAccessToken(null);
+        responseDto.setRefreshToken(null);
+
+        return ResponseEntity.ok().headers(headers).body(responseDto);
     }
 
     @Operation(summary = "로그아웃", description = "리프레시 토큰을 무효화하여 로그아웃합니다.")
@@ -47,9 +55,13 @@ public class UserController {
 
     @Operation(summary = "엑세스 토큰 재발급", description = "리프레시 토큰으로 새로운 엑세스 토큰을 발급받습니다.")
     @PostMapping("/token/refresh")
-    public ResponseEntity<RefreshTokenResponseDTO> refresh(@RequestBody @Valid RefreshTokenRequestDTO requestDto) {
+    public ResponseEntity<?> refresh(@RequestBody @Valid RefreshTokenRequestDTO requestDto) {
         RefreshTokenResponseDTO tokens = userService.refreshToken(requestDto);
-        return ResponseEntity.ok(tokens);
-    }
+        // 헤더에 토큰 설정
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("Authorization", "Bearer " + tokens.getAccessToken());
+        headers.set("Refresh-Token", tokens.getRefreshToken());
 
+        return ResponseEntity.noContent().headers(headers).build();
+    }
 }
