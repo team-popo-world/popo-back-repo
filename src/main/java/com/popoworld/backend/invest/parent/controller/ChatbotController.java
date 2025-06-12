@@ -16,9 +16,9 @@ import org.springframework.web.bind.annotation.RestController;
 @Tag(name="Chatbot", description = "시나리오 업데이트 챗봇 API")
 public class ChatbotController {
 
-    @Operation(summary = "채팅 입력", description = "채팅으로 시나리오 업데이트 요청")
-    @PostMapping("/input")
-    public ResponseEntity<?> chat(@RequestBody ChatbotRequestDTO) {
-
-    }
+//    @Operation(summary = "채팅 입력", description = "채팅으로 시나리오 업데이트 요청")
+//    @PostMapping("/input")
+//    public ResponseEntity<?> chat(@RequestBody ChatbotRequestDTO) {
+//
+//    }
 }
