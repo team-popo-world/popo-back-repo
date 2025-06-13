@@ -54,16 +54,16 @@ public class QuestController {
     }
 
 
-    //테스트용 api. 신규 가입자 일일퀘스트는 자정에 생성하는게 아니라 가입하자마자 생성해야되니까
-    //그거 테스트 하는 api임. 나중에 삭제될거
-    @PostMapping("/test/create-for-new-child")
-    public ResponseEntity<String> testCreateForNewChild(
-            @RequestParam String childId
-    ) {
-        UUID uuid = UUID.fromString(childId);
-        questService.createDailyQuestsForNewChild(uuid);  // 🎯 이 기능 테스트
-        return ResponseEntity.ok("✅ 아이 ID [" + childId + "]에게 일일퀘스트 5개 생성 완료!");
-    }
+//    //테스트용 api. 신규 가입자 일일퀘스트는 자정에 생성하는게 아니라 가입하자마자 생성해야되니까
+//    //그거 테스트 하는 api임. 나중에 삭제될거
+//    @PostMapping("/test/create-for-new-child")
+//    public ResponseEntity<String> testCreateForNewChild(
+//            @RequestParam String childId
+//    ) {
+//        UUID uuid = UUID.fromString(childId);
+//        questService.createDailyQuestsForNewChild(uuid);  // 🎯 이 기능 테스트
+//        return ResponseEntity.ok("✅ 아이 ID [" + childId + "]에게 일일퀘스트 5개 생성 완료!");
+//    }
 
     // 새로 추가되는 상태 변경 API
     @PostMapping("/state")
