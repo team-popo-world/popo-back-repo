@@ -11,6 +11,8 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.UUID;
 
+import static com.popoworld.backend.global.token.SecurityUtil.getCurrentUserId;
+
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/attendance")
@@ -30,7 +32,7 @@ public class AttendanceController {
     //출석 체크
     public ResponseEntity<String>checkAttendance(@RequestBody TodayAttendanceRequest request){
         try{
-            UUID childId = UUID.fromString("123e4567-e89b-12d3-a456-426614174000");
+            UUID childId = getCurrentUserId();
             String result = attendanceService.checkAttendance(childId,request);
             return ResponseEntity.status(HttpStatus.CREATED).body(result);
         } catch (IllegalArgumentException e) {
