@@ -1,7 +1,7 @@
 package com.popoworld.backend.invest.service.parent;
 
+import com.popoworld.backend.invest.dto.parent.dto.GetCustomScenarioListResponseDTO;
 import com.popoworld.backend.invest.entity.InvestScenario;
-import com.popoworld.backend.invest.repository.InvestChapterRepository;
 import com.popoworld.backend.invest.repository.InvestScenarioRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -14,7 +14,7 @@ import java.util.UUID;
 @Service
 @RequiredArgsConstructor
 @Transactional
-public class ParentInvestServiceImpl {
+public class ParentInvestServiceImpl implements ParentInvestService{
 
     private final InvestScenarioRepository investScenarioRepository;
 
@@ -28,7 +28,10 @@ public class ParentInvestServiceImpl {
         investScenarioRepository.delete(scenario);
     }
 
-    public List<InvestScenario> getScenarioList(UUID childId, PageRequest pageRequest) {
-        return investScenarioRepository.findByChildId(childId, pageRequest).getContent();
+    public List<GetCustomScenarioListResponseDTO> getScenarioList(UUID childId, PageRequest pageRequest) {
+        // 시나리오 리스트 가져온 후에
+        List<InvestScenario> scenario =  investScenarioRepository.findByChildId(childId, pageRequest).getContent();
+        // dto로 매핑
+        return scenario.stream().map(s -> GetCustomScenarioListResponseDTO.builder().scenario(s).build()).toList();
     }
 }

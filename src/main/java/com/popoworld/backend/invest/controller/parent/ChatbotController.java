@@ -1,6 +1,7 @@
 package com.popoworld.backend.invest.controller.parent;
 
 import com.popoworld.backend.invest.dto.parent.dto.ChatbotRequestDTO;
+import com.popoworld.backend.invest.dto.parent.dto.GetCustomScenarioListResponseDTO;
 import com.popoworld.backend.invest.dto.parent.dto.SaveCustomScenarioRequestDTO;
 import com.popoworld.backend.invest.dto.parent.dto.DeleteCustomScenarioRequestDTO;
 import com.popoworld.backend.invest.entity.InvestScenario;
@@ -67,10 +68,10 @@ public class ChatbotController {
             description = "시나리오 리스트 조회"
     )
     @GetMapping("/items")
-    public ResponseEntity<List<?>> getScenarios(@RequestParam int page, @RequestParam int size) {
-        UUID childId = getCurrentUserId();
+    public ResponseEntity<List<GetCustomScenarioListResponseDTO>> getScenarios(@RequestParam int page, @RequestParam int size) {
+        UUID childId = UUID.fromString( "11111111-1111-1111-1111-111111111111");
         PageRequest pageRequest = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createAt"));
-        List<InvestScenario> scenarios = parentInvestService.getScenarioList(childId, pageRequest);
+        List<GetCustomScenarioListResponseDTO> scenarios = parentInvestService.getScenarioList(childId, pageRequest);
         return ResponseEntity.ok(scenarios);
     }
 }
