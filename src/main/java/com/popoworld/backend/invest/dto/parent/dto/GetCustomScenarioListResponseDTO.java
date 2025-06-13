@@ -13,27 +13,20 @@ import java.util.UUID;
 @Setter
 public class GetCustomScenarioListResponseDTO {
 
-    @Id
     private UUID scenarioId;
 
-    private UUID childId;
-
-    @Column(columnDefinition = "TEXT")
     private String story;
 
-    private Boolean isCustom; //부모가 만든건지
+    private Boolean isCustom;
 
-    @Column(name = "create_at")  // DB 컬럼명과 맞춤
     private LocalDateTime createAt;
 
-    @Column(name = "updated_at") // DB 컬럼명과 맞춤
     private LocalDateTime updatedAt;
 
 
     @Builder
     public GetCustomScenarioListResponseDTO(InvestScenario scenario) {
         this.scenarioId = scenario.getScenarioId();
-        this.childId = scenario.getChildId();
         this.story = scenario.getStory();
         this.isCustom = scenario.getIsCustom();
         this.createAt = scenario.getCreateAt();
