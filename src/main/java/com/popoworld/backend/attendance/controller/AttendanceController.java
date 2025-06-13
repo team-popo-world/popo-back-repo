@@ -22,7 +22,7 @@ public class AttendanceController {
     //출석 현황 조회
     @GetMapping
     public ResponseEntity<List<WeekAttendanceResponse>> getAttendanceStatus() {
-        UUID childId = UUID.fromString("123e4567-e89b-12d3-a456-426614174000");
+        UUID childId =getCurrentUserId();
         List<WeekAttendanceResponse> result = attendanceService.getAttendanceList(childId);
         return ResponseEntity.ok(result);
     }
