@@ -37,7 +37,6 @@ public class DiaryController {
     public ResponseEntity<String> createEmotionDiary(@RequestBody DiaryTodayRequest request){
 
         try {
-            // 임시로 고정된 childId 사용 (나중에 JWT에서 추출 예정)
             UUID childId = getCurrentUserId();
 
             emotionDiaryService.createEmotionDiary(childId, request);
@@ -60,9 +59,7 @@ public class DiaryController {
             @ApiResponse(responseCode = "500", description = "서버 오류")
     })
     public ResponseEntity<List<DiaryListResponse>>getEmotionDiaries(){
-        // 임시로 고정된 childId 사용 (나중에 JWT에서 추출 예정)
-        UUID childId = UUID.fromString("123e4567-e89b-12d3-a456-426614174000");
-
+        UUID childId =  getCurrentUserId();
         List<DiaryListResponse> diaries = emotionDiaryService.getEmotionDiariesByChildId(childId);
         return ResponseEntity.ok(diaries);
     }
