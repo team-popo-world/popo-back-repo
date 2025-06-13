@@ -35,13 +35,13 @@ public class ScenarioService {
 
             // 백엔드에서 설정하는 값들
             UUID scenarioId = UUID.randomUUID();
-            UUID childId = getCurrentUserId(); // 임시 childId
+
             LocalDateTime now = LocalDateTime.now(ZoneId.of("Asia/Seoul"));
 
             // InvestScenario 객체 생성
             InvestScenario scenario = new InvestScenario(
                     scenarioId,
-                    childId,
+                    null,
                     request.getStory(),
                     request.getIsCustom(),
                     now,        // createdAt - 생성 시간
