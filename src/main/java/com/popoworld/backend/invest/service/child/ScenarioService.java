@@ -35,7 +35,6 @@ public class ScenarioService {
 
             // 백엔드에서 설정하는 값들
             UUID scenarioId = UUID.randomUUID();
-
             LocalDateTime now = LocalDateTime.now(ZoneId.of("Asia/Seoul"));
 
             // InvestScenario 객체 생성
