@@ -22,6 +22,8 @@ import java.util.List;
 import java.util.Random;
 import java.util.UUID;
 
+import static com.popoworld.backend.global.token.SecurityUtil.getCurrentUserId;
+
 @Service
 @RequiredArgsConstructor
 public class InvestService {
@@ -59,7 +61,7 @@ public class InvestService {
         }
         // 2. 새로운 게임 세션 생성
         UUID sessionId = UUID.randomUUID();
-        UUID childId = UUID.fromString("c1111111-2222-3333-4444-555555555555"); // 임시 childId
+        UUID childId = getCurrentUserId(); // 임시 childId
         LocalDateTime now = LocalDateTime.now(ZoneId.of("Asia/Seoul"));
 
         InvestSession newSession = new InvestSession(
@@ -117,7 +119,7 @@ public class InvestService {
         UUID investSessionId = UUID.fromString(request.getSessionId());
 
         // 2. 임시 childId (나중에 JWT에서 가져올 예정)
-        UUID childId = UUID.fromString("c1111111-2222-3333-4444-555555555555");
+        UUID childId = getCurrentUserId();
 
         // 3. 시간 파싱
         LocalDateTime startedAt = LocalDateTime.parse(request.getStartedAt());

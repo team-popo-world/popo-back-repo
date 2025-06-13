@@ -14,6 +14,8 @@ import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.UUID;
 
+import static com.popoworld.backend.global.token.SecurityUtil.getCurrentUserId;
+
 @Service
 @RequiredArgsConstructor
 public class ScenarioService {
@@ -33,7 +35,7 @@ public class ScenarioService {
 
             // 백엔드에서 설정하는 값들
             UUID scenarioId = UUID.randomUUID();
-            UUID childId = UUID.fromString("c1111111-2222-3333-4444-555555555555"); // 임시 childId
+            UUID childId = getCurrentUserId(); // 임시 childId
             LocalDateTime now = LocalDateTime.now(ZoneId.of("Asia/Seoul"));
 
             // InvestScenario 객체 생성

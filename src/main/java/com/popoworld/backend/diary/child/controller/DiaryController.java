@@ -15,6 +15,8 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.UUID;
 
+import static com.popoworld.backend.global.token.SecurityUtil.getCurrentUserId;
+
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/diary")
@@ -36,7 +38,7 @@ public class DiaryController {
 
         try {
             // 임시로 고정된 childId 사용 (나중에 JWT에서 추출 예정)
-            UUID childId = UUID.fromString("123e4567-e89b-12d3-a456-426614174000");
+            UUID childId = getCurrentUserId();
 
             emotionDiaryService.createEmotionDiary(childId, request);
             return ResponseEntity.status(HttpStatus.CREATED).body("감정 일기가 성공적으로 등록되었습니다.");

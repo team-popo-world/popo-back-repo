@@ -69,7 +69,7 @@ public class ChatbotController {
     )
     @GetMapping("/items")
     public ResponseEntity<List<GetCustomScenarioListResponseDTO>> getScenarios(@RequestParam int page, @RequestParam int size) {
-        UUID childId = UUID.fromString( "11111111-1111-1111-1111-111111111111");
+        UUID childId = getCurrentUserId();
         PageRequest pageRequest = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createAt"));
         List<GetCustomScenarioListResponseDTO> scenarios = parentInvestService.getScenarioList(childId, pageRequest);
         return ResponseEntity.ok(scenarios);

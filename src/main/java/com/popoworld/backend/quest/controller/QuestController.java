@@ -16,6 +16,8 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.UUID;
 
+import static com.popoworld.backend.global.token.SecurityUtil.getCurrentUserId;
+
 @RestController
 @RequestMapping("/api/quest")
 @RequiredArgsConstructor
@@ -39,7 +41,7 @@ public class QuestController {
     ){
         try{
             //JWT에서 childId 추출 예정, 현재는 임시값!
-            UUID childId = UUID.fromString("c1111111-2222-3333-4444-555555555555");
+            UUID childId = getCurrentUserId();
             List<QuestResponse>quests = questService.getQuestsByType(childId,type);
             return ResponseEntity.ok(quests);
         }catch (IllegalArgumentException e){
