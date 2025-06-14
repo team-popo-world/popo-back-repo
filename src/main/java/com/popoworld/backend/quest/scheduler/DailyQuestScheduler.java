@@ -1,5 +1,6 @@
 package com.popoworld.backend.quest.scheduler;
 
+import com.popoworld.backend.User.repository.UserRepository;
 import com.popoworld.backend.quest.entity.Quest;
 import com.popoworld.backend.quest.enums.QuestState;
 import com.popoworld.backend.quest.repository.QuestRepository;
@@ -12,7 +13,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
@@ -22,13 +22,14 @@ import java.util.UUID;
 public class DailyQuestScheduler {
 
     private final QuestRepository questRepository;
+    private final UserRepository childRepository;
 
 
     /**
      * 매일 자정에 일일퀘스트 리셋 및 부모퀘스트 만료 처리
      */
     // 매일 새벽 5시에 실행
-    @Scheduled(cron = "0 0 5 * * *", zone = "Asia/Seoul")
+    @Scheduled(cron = "0 0 * * * *", zone = "Asia/Seoul")
     @Transactional
     public void dailyMaintenance() {
         log.info("🎮 일일 유지보수 시작 - {}", LocalDateTime.now());
@@ -101,14 +102,10 @@ public class DailyQuestScheduler {
      * 지금은 임시 하드코딩된 아이 목록 !!!
      */
     private List<UUID> getAllChildren() {
-        List<UUID> testChildren = Arrays.asList(
-                UUID.fromString("c1111111-2222-3333-4444-555555555555"),  // 기본 테스트 아이
-                UUID.fromString("c2222222-3333-4444-5555-666666666666"),  // 추가 테스트 아이1
-                UUID.fromString("c3333333-4444-5555-6666-777777777777")   // 추가 테스트 아이2
-        );
+        List<UUID> Children = childRepository.findAllChildrenByRole("Child");
 
-        log.info("🧪 하드코딩된 테스트 아이 목록 사용: {}명", testChildren.size());
-        return testChildren;
+        log.info("🧪 하드코딩된 테스트 아이 목록 사용: {}명", Children.size());
+        return Children;
     }
 
     /**

@@ -21,4 +21,7 @@ public interface UserRepository extends JpaRepository<User, UUID> {
     boolean existsByParentCode(String parentCode);
 
     Optional<User> findByParentCodeAndRole(String parentCode, String role);
+
+
+    List<UUID> findAllChildrenByRole(String child);
 }
