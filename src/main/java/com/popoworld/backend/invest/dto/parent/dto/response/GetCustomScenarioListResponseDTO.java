@@ -1,7 +1,6 @@
-package com.popoworld.backend.invest.dto.parent.dto;
+package com.popoworld.backend.invest.dto.parent.dto.response;
 
 import com.popoworld.backend.invest.entity.InvestScenario;
-import jakarta.persistence.*;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;

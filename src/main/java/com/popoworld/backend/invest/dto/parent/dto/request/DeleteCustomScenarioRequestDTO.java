@@ -1,4 +1,4 @@
-package com.popoworld.backend.invest.dto.parent.dto;
+package com.popoworld.backend.invest.dto.parent.dto.request;
 
 import lombok.Getter;
 import lombok.Setter;
