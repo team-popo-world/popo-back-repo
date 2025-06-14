@@ -1,10 +1,9 @@
 package com.popoworld.backend.invest.controller.parent;
 
-import com.popoworld.backend.invest.dto.parent.dto.ChatbotRequestDTO;
-import com.popoworld.backend.invest.dto.parent.dto.GetCustomScenarioListResponseDTO;
-import com.popoworld.backend.invest.dto.parent.dto.SaveCustomScenarioRequestDTO;
-import com.popoworld.backend.invest.dto.parent.dto.DeleteCustomScenarioRequestDTO;
-import com.popoworld.backend.invest.entity.InvestScenario;
+import com.popoworld.backend.invest.dto.parent.dto.request.ChatbotEditRequestDTO;
+import com.popoworld.backend.invest.dto.parent.dto.request.ChatbotSetRequestDTO;
+import com.popoworld.backend.invest.dto.parent.dto.response.GetCustomScenarioListResponseDTO;
+import com.popoworld.backend.invest.dto.parent.dto.request.DeleteCustomScenarioRequestDTO;
 import com.popoworld.backend.invest.service.parent.ParentInvestService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -27,17 +26,32 @@ public class ChatbotController {
 
     private final ParentInvestService parentInvestService;
 
-//    @Operation(summary = "채팅 입력", description = "채팅으로 시나리오 업데이트 요청")
-//    @PostMapping("/message")
-//    public ResponseEntity<?> chat(@RequestBody ChatbotRequestDTO) {
-//        //요청데이터 받아서
-//
-//        //ml fastapi 호출
-//
-//        //응답 반환
-//
-//    }
-//
+    @Operation(summary = "시나리오 수정 세팅", description = "시나리오 불러오기 및 redis에 임시 저장")
+    @PostMapping("/edit-scenario")
+    public ResponseEntity<?> set(@RequestBody ChatbotSetRequestDTO requestDTO) {
+        //요청데이터 받아서
+        UUID userId = getCurrentUserId();
+
+        //redis에 시나리오 임시저장
+        parentInvestService.setEditScenario(userId, requestDTO);
+
+        //응답 반환
+        return ResponseEntity.ok("시나리오 불러오기 완료");
+    }
+
+    @Operation(summary = "채팅 입력", description = "채팅으로 시나리오 업데이트 요청")
+    @PostMapping("/message")
+    public ResponseEntity<?> chat(@RequestBody ChatbotEditRequestDTO requestDTO) {
+        //요청데이터 받아서
+        UUID userId = getCurrentUserId();
+
+        //ml fastapi 호출
+        parentInvestService.processChatMessage(userId, requestDTO);
+
+        //응답 반환
+        return ResponseEntity.accepted().build(); // 비동기이므로 즉시 응답
+    }
+
 //
 //    @Operation(
 //            summary = "ML 커스텀 시나리오로 기존 시나리오 저장",
