@@ -8,6 +8,8 @@ import com.popoworld.backend.User.dto.Request.*;
 import com.popoworld.backend.User.dto.Response.*;
 import com.popoworld.backend.global.token.JwtTokenProvider;
 import com.popoworld.backend.global.token.RefreshToken;
+import com.popoworld.backend.quest.repository.QuestRepository;
+import com.popoworld.backend.quest.service.QuestService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -26,6 +28,7 @@ public class UserServiceImpl implements UserService {
     private final RefreshTokenRepository refreshTokenRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtTokenProvider jwtTokenProvider;
+    private final QuestService questService;
 
     // 공통로직
     @Override
@@ -65,6 +68,10 @@ public class UserServiceImpl implements UserService {
         }
 
         userRepository.save(user);
+
+        if ("Child".equalsIgnoreCase(user.getRole())) {
+            questService.createDailyQuestsForNewChild(user.getUserId());
+        }
     }
 
     @Override
