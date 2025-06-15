@@ -2,6 +2,7 @@ package com.popoworld.backend.invest.service.parent;
 
 import com.popoworld.backend.invest.dto.parent.dto.request.ChatbotEditRequestDTO;
 import com.popoworld.backend.invest.dto.parent.dto.request.ChatbotSetRequestDTO;
+import com.popoworld.backend.invest.dto.parent.dto.request.SaveCustomScenarioRequestDTO;
 import com.popoworld.backend.invest.dto.parent.dto.response.GetCustomScenarioListResponseDTO;
 import org.springframework.data.domain.PageRequest;
 
@@ -13,4 +14,6 @@ public interface ParentInvestService {
     List<GetCustomScenarioListResponseDTO> getScenarioList(UUID childId, PageRequest pageRequest);
     void setEditScenario(UUID userId, ChatbotSetRequestDTO requestDTO);
     void processChatMessage(UUID userId, ChatbotEditRequestDTO requestDTO);
+
+    void saveScenario(UUID userId, SaveCustomScenarioRequestDTO requestDTO);
 }
