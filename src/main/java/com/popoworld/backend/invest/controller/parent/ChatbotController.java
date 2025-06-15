@@ -4,6 +4,7 @@ import com.popoworld.backend.invest.dto.parent.dto.request.ChatbotEditRequestDTO
 import com.popoworld.backend.invest.dto.parent.dto.request.ChatbotSetRequestDTO;
 import com.popoworld.backend.invest.dto.parent.dto.response.GetCustomScenarioListResponseDTO;
 import com.popoworld.backend.invest.dto.parent.dto.request.DeleteCustomScenarioRequestDTO;
+import com.popoworld.backend.invest.service.SseEmitters;
 import com.popoworld.backend.invest.service.parent.ParentInvestService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -12,6 +13,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import java.util.List;
 import java.util.UUID;
@@ -25,6 +27,7 @@ import static com.popoworld.backend.global.token.SecurityUtil.getCurrentUserId;
 public class ChatbotController {
 
     private final ParentInvestService parentInvestService;
+    private final SseEmitters sseEmitters;
 
     @Operation(summary = "시나리오 수정 세팅", description = "시나리오 불러오기 및 redis에 임시 저장")
     @PostMapping("/edit-scenario")
@@ -50,6 +53,13 @@ public class ChatbotController {
 
         //응답 반환
         return ResponseEntity.accepted().build(); // 비동기이므로 즉시 응답
+    }
+
+    @Operation(summary = "SSE 연결", description = "챗봇 업데이트 알림용 SSE 연결")
+    @GetMapping("/sse")
+    public SseEmitter connect() {
+        UUID userId = getCurrentUserId();
+        return sseEmitters.create(userId);
     }
 
 //
