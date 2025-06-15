@@ -23,6 +23,7 @@ import java.util.stream.Collectors;
 public class QuestService {
     private final QuestRepository questRepository;
     private final UserRepository userRepository;
+    private final QuestHistoryService questHistoryService;
 
     // 🎯 메인 메서드: 퀘스트 목록 + 포인트 (래퍼 객체 사용)
     public QuestListWithPointResponse getQuestsWithPoint(UUID childId, String type) {
@@ -67,6 +68,8 @@ public class QuestService {
     public void createDailyQuestsForNewChild(UUID childId) {
         List<Quest> newQuests = createDailyQuestsForChild(childId);
         questRepository.saveAll(newQuests);
+        //로그 전송
+        newQuests.forEach(quest -> questHistoryService.logQuest(quest));
         log.info("🆕 새 아이 일일퀘스트 생성 완료 - childId: {}, 퀘스트: {}개", childId, newQuests.size());
     }
 
@@ -92,6 +95,10 @@ public class QuestService {
                 request.getImageUrl()
         );
         Quest savedQuest = questRepository.save(parentQuest);
+
+        //퀘스트 생성 로그 전송
+        questHistoryService.logQuest(savedQuest);
+
         return convertToDto(savedQuest);
     }
 
@@ -111,6 +118,8 @@ public class QuestService {
         validateStateTransition(currentState, newState);
         quest.changeState(newState);
 
+        //상태 변경 로그 전송
+        questHistoryService.logQuest(quest);
         if (newState == QuestState.COMPLETED) {
             giveRewardToChild(quest.getChildId(), quest.getReward(), quest.getName());
         }
