@@ -6,8 +6,11 @@ import com.popoworld.backend.invest.dto.parent.dto.kafka.ChatKafkaPayload;
 import com.popoworld.backend.invest.dto.parent.dto.request.ChatbotEditRequestDTO;
 import com.popoworld.backend.invest.dto.parent.dto.request.ChatbotSetRequestDTO;
 import com.popoworld.backend.invest.dto.parent.dto.request.ChatbotStoryRequestDTO;
+import com.popoworld.backend.invest.dto.parent.dto.request.SaveCustomScenarioRequestDTO;
 import com.popoworld.backend.invest.dto.parent.dto.response.GetCustomScenarioListResponseDTO;
+import com.popoworld.backend.invest.entity.InvestChapter;
 import com.popoworld.backend.invest.entity.InvestScenario;
+import com.popoworld.backend.invest.repository.InvestChapterRepository;
 import com.popoworld.backend.invest.repository.InvestScenarioRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -17,20 +20,23 @@ import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 
 import java.time.Duration;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.List;
 import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
 @Transactional
-public class ParentInvestServiceImpl implements ParentInvestService{
+public class ParentInvestServiceImpl implements ParentInvestService {
 
     private final InvestScenarioRepository investScenarioRepository;
     private final ObjectMapper objectMapper;
     private final KafkaTemplate<String,String> kafkaTemplate;
     private final RedisTemplate<String, String> redisTemplate;
+    private final InvestChapterRepository investChapterRepository;
 
-
+    @Override
     public void setEditScenario(UUID userId, ChatbotSetRequestDTO requestDTO){
         // 시나리오 찾아와서
         InvestScenario scenario = investScenarioRepository.findById(requestDTO.getScenarioId())
@@ -51,7 +57,7 @@ public class ParentInvestServiceImpl implements ParentInvestService{
         }
     };
 
-
+    @Override
     public void processChatMessage(UUID userId, ChatbotEditRequestDTO requestDTO){
         try {
             ChatKafkaPayload payload = new ChatKafkaPayload();
@@ -66,6 +72,36 @@ public class ParentInvestServiceImpl implements ParentInvestService{
         }
     };
 
+    @Override
+    public void saveScenario(UUID userId, SaveCustomScenarioRequestDTO requestDTO) {
+        UUID scenarioId = UUID.randomUUID();
+
+        String redisKdy = "scenario:temp:" + userId;
+        String story = redisTemplate.opsForValue().get(redisKdy);
+
+        LocalDateTime now = LocalDateTime.now(ZoneId.of("Asia/Seoul"));
+
+        try {
+            ChatbotStoryRequestDTO dto = objectMapper.readValue(story, ChatbotStoryRequestDTO.class);
+
+            InvestChapter chapter = investChapterRepository.findByChapterId(dto.getChapterId());
+
+            InvestScenario scenario = new InvestScenario();
+            scenario.setScenarioId(scenarioId);
+            scenario.setChildId(requestDTO.getChildId());
+            scenario.setStory(dto.getStory());
+            scenario.setIsCustom(true);
+            scenario.setCreateAt(now);
+            scenario.setUpdatedAt(now);
+            scenario.setInvestChapter(chapter);
+
+            investScenarioRepository.save(scenario);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Override
     public void deleteScenario(UUID scenarioId) {
         // 존재 여부 확인 (예외 처리 가능)
         InvestScenario scenario = investScenarioRepository.findById(scenarioId)
@@ -75,6 +111,7 @@ public class ParentInvestServiceImpl implements ParentInvestService{
         investScenarioRepository.delete(scenario);
     }
 
+    @Override
     public List<GetCustomScenarioListResponseDTO> getScenarioList(UUID childId, PageRequest pageRequest) {
         // 시나리오 리스트 가져온 후에
         List<InvestScenario> scenario =  investScenarioRepository.findByChildId(childId, pageRequest).getContent();

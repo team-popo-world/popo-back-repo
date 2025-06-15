@@ -2,6 +2,7 @@ package com.popoworld.backend.invest.controller.parent;
 
 import com.popoworld.backend.invest.dto.parent.dto.request.ChatbotEditRequestDTO;
 import com.popoworld.backend.invest.dto.parent.dto.request.ChatbotSetRequestDTO;
+import com.popoworld.backend.invest.dto.parent.dto.request.SaveCustomScenarioRequestDTO;
 import com.popoworld.backend.invest.dto.parent.dto.response.GetCustomScenarioListResponseDTO;
 import com.popoworld.backend.invest.dto.parent.dto.request.DeleteCustomScenarioRequestDTO;
 import com.popoworld.backend.invest.service.SseEmitters;
@@ -62,18 +63,19 @@ public class ChatbotController {
         return sseEmitters.create(userId);
     }
 
-//
-//    @Operation(
-//            summary = "ML 커스텀 시나리오로 기존 시나리오 저장",
-//            description = "커스텀한 시나리오가 마음에 들면 저장"
-//    )
-//    @PostMapping("/save")
-//    public ResponseEntity<String> saveScenario(@RequestBody SaveCustomScenarioRequestDTO request) {
-//        // 저장요청 받으면
-//
-//        // 저장소에 저장
-//
-//    }
+
+    @Operation(
+            summary = "ML 커스텀 시나리오로 기존 시나리오 저장",
+            description = "커스텀한 시나리오가 마음에 들면 저장"
+    )
+    @PostMapping("/save")
+    public ResponseEntity<String> saveScenario(@RequestBody SaveCustomScenarioRequestDTO request) {
+        // 저장요청 받으면
+        UUID userId = getCurrentUserId();
+        // 저장소에 저장
+        parentInvestService.saveScenario(userId, request);
+        return ResponseEntity.ok("저장 성공");
+    }
 
 
     @Operation(summary = "시나리오 리스트 중 하나 삭제",

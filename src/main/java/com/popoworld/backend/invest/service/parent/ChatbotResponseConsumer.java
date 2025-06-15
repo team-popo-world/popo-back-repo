@@ -28,9 +28,7 @@ public class ChatbotResponseConsumer {
 
         if (data != null) {
             // SSE로 해당 유저에게 푸시
-            System.out.println("cocococococococo");
             sseEmitters.send(userIds, data);
-            System.out.println("bbbbbbbbbbbbbbbb");
         }
     }
 }
