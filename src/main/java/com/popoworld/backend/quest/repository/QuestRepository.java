@@ -27,11 +27,11 @@ public interface QuestRepository extends JpaRepository<Quest, UUID> {
 
     // 부모퀘스트 만료 처리용 - 이 메서드를 추가하세요!
     @Modifying
-    @Query("UPDATE Quest q SET q.state = :expiredState WHERE q.type = :questType AND q.endDate < :now AND q.state NOT IN (:completedState, :expiredState)")
+    @Query("UPDATE Quest q SET q.state = :expiredState WHERE q.type = :questType AND q.endDate < :now AND q.state = :activeState")
     int updateExpiredParentQuests(
             @Param("now") LocalDateTime now,
             @Param("questType") Quest.QuestType questType,
             @Param("expiredState") QuestState expiredState,
-            @Param("completedState") QuestState completedState
+            @Param("activeState") QuestState activeState  // ACTIVE 상태만 만료 처리
     );
 }

@@ -1,5 +1,6 @@
 package com.popoworld.backend.quest.scheduler;
 
+import com.popoworld.backend.User.User;
 import com.popoworld.backend.User.repository.UserRepository;
 import com.popoworld.backend.quest.entity.Quest;
 import com.popoworld.backend.quest.enums.QuestState;
@@ -15,6 +16,7 @@ import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Component
 @RequiredArgsConstructor
@@ -30,8 +32,10 @@ public class DailyQuestScheduler {
      */
     // 매일 새벽 5시에 실행
     @Scheduled(cron = "0 0 * * * *", zone = "Asia/Seoul")
+//    @Scheduled(cron = "0 */1 * * * *", zone = "Asia/Seoul") // 1분마다
     @Transactional
     public void dailyMaintenance() {
+        log.info("🎮🎮🎮 스케줄러 실행됨! 현재시간: {}", LocalDateTime.now());
         log.info("🎮 일일 유지보수 시작 - {}", LocalDateTime.now());
 
         try {
@@ -42,7 +46,7 @@ public class DailyQuestScheduler {
             questRepository.deleteByType(Quest.QuestType.DAILY);
             log.info("🗑️ 기존 일일퀘스트 모두 삭제 완료");
 
-            // 3단계: 모든 아이들 목록 조회 (🔥 하드코딩된 목록)
+            // 3단계: 모든 아이들 목록 조회
             List<UUID> allChildren = getAllChildren();
             log.info("📊 전체 아이 수: {}", allChildren.size());
 
@@ -88,10 +92,10 @@ public class DailyQuestScheduler {
      * 특정 아이에게 일일퀘스트 5개 생성
      */
     private List<UUID> getAllChildren() {
-        List<UUID> Children = childRepository.findAllChildrenByRole("Child");
-
-        log.info("🧪 하드코딩된 테스트 아이 목록 사용: {}명", Children.size());
-        return Children;
+        List<User> users = childRepository.findByRole("Child");
+        return users.stream()
+                .map(User::getUserId)
+                .collect(Collectors.toList());
     }
 
     /**

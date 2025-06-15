@@ -1,5 +1,6 @@
 package com.popoworld.backend.savingAccount.service;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.popoworld.backend.savingAccount.entity.SavingAccount;
@@ -148,9 +149,11 @@ public class SavingAccountHistoryService {
     /**
      * Kafka로 메시지 전송
      */
+    // SavingAccountHistoryService.java의 sendToKafka 메서드에서
     private void sendToKafka(SavingAccountHistory history) throws Exception {
         ObjectMapper mapper = new ObjectMapper();
         mapper.registerModule(new JavaTimeModule());
+        mapper.setSerializationInclusion(JsonInclude.Include.ALWAYS); // ✅ null 값도 포함
         String json = mapper.writeValueAsString(history);
 
         savingAccountHistoryKafkaProducer.sendSavingAccountHistory("saving-account-history", json);
