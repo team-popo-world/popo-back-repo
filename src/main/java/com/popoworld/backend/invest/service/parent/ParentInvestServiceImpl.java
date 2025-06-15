@@ -41,7 +41,6 @@ public class ParentInvestServiceImpl implements ParentInvestService{
                 .story(scenario.getStory())
                 .build();
 
-
         try {
             // 형태 바꿔서 redis에 임시 저장 -> 나중에 수정 채팅 보내면 이거 꺼내서 fastapi에 요청
            String response = objectMapper.writeValueAsString(payload);
@@ -54,17 +53,9 @@ public class ParentInvestServiceImpl implements ParentInvestService{
 
 
     public void processChatMessage(UUID userId, ChatbotEditRequestDTO requestDTO){
-        // 키값으로 꺼내와서
-        String redisKey = "scenario:temp:" + userId;
-        String story = redisTemplate.opsForValue().get(redisKey);
-
         try {
-            ChatbotStoryRequestDTO dto = objectMapper.readValue(story, ChatbotStoryRequestDTO.class);
-
             ChatKafkaPayload payload = new ChatKafkaPayload();
-            payload.setUserId(userId);                           // ✅ payload에 포함
-            payload.setChapterId(dto.getChapterId());
-            payload.setStory(dto.getStory());
+            payload.setUserId(userId);
             payload.setEditRequest(requestDTO.getEditRequest());
 
             String jsonPayload = objectMapper.writeValueAsString(payload);
