@@ -1,19 +1,20 @@
 package com.popoworld.backend.quest.controller;
 
-import com.popoworld.backend.quest.dto.ParentQuestRequest;
-import com.popoworld.backend.quest.dto.QuestResponse;
-import com.popoworld.backend.quest.dto.QuestStateChangeRequest;
+import com.popoworld.backend.quest.dto.*;
 import com.popoworld.backend.quest.service.QuestService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.ExampleObject;
+import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
 import java.util.UUID;
 
 import static com.popoworld.backend.global.token.SecurityUtil.getCurrentUserId;
@@ -21,51 +22,175 @@ import static com.popoworld.backend.global.token.SecurityUtil.getCurrentUserId;
 @RestController
 @RequestMapping("/api/quest")
 @RequiredArgsConstructor
-@Tag(name="Quest", description = "퀘스트 관리 API")
+@Tag(name = "퀘스트 관리", description = "아이와 부모를 위한 퀘스트 생성, 조회, 상태 관리 API")
+@SecurityRequirement(name = "bearerAuth")
 public class QuestController {
     private final QuestService questService;
 
     @GetMapping
     @Operation(
-            summary = "퀘스트 목록 조회",
-            description = "퀘스트 목록을 조회합니다. 타입으로 필터링 가능합니다."
+            summary = "퀘스트 목록 조회 (포인트 정보 포함)",
+            description = "아이의 퀘스트 목록과 현재 포인트 정보를 함께 조회합니다. 포인트는 최상위 레벨에 한 번만 표시됩니다."
     )
-    @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "퀘스트 조회 성공"),
-            @ApiResponse(responseCode = "400", description = "잘못된 파라미터"),
-            @ApiResponse(responseCode = "401", description = "인증 실패")
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "퀘스트 및 포인트 조회 성공",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = QuestListWithPointResponse.class),
+                            examples = {
+                                    @ExampleObject(
+                                            name = "일일퀘스트 목록 + 포인트",
+                                            value = """
+                                            {
+                                                "currentPoint": 10100,
+                                                "quests": [
+                                                    {
+                                                        "quest_id": "643dfa5d-2794-41f0-8eef-8d98054cf2df",
+                                                        "child_id": "2caf849e-69d7-4136-a7ce-f58d234f1941",
+                                                        "type": "daily",
+                                                        "name": "장난감 정리하기",
+                                                        "description": "가지고 온 장난감은 스스로 치워볼까?",
+                                                        "state": "PENDING_ACCEPT",
+                                                        "end_date": "2025-06-15T23:59:59",
+                                                        "created": "2025-06-15T15:40:49.984902",
+                                                        "isStatic": false,
+                                                        "reward": 100,
+                                                        "imageUrl": null
+                                                    },
+                                                    {
+                                                        "quest_id": "09810a61-69f4-4a68-a9df-6942d54abc0a",
+                                                        "child_id": "2caf849e-69d7-4136-a7ce-f58d234f1941",
+                                                        "type": "daily",
+                                                        "name": "양치하기",
+                                                        "description": "밥 먹었으면 포포와 양치하자!",
+                                                        "state": "COMPLETED",
+                                                        "end_date": "2025-06-15T23:59:59",
+                                                        "created": "2025-06-15T15:40:49.984852",
+                                                        "isStatic": false,
+                                                        "reward": 100,
+                                                        "imageUrl": null
+                                                    }
+                                                ]
+                                            }
+                                            """
+                                    ),
+                                    @ExampleObject(
+                                            name = "부모퀘스트 목록 + 포인트",
+                                            value = """
+                                            {
+                                                "currentPoint": 10100,
+                                                "quests": [
+                                                    {
+                                                        "quest_id": "550e8400-e29b-41d4-a716-446655440003",
+                                                        "child_id": "2caf849e-69d7-4136-a7ce-f58d234f1941",
+                                                        "type": "parent",
+                                                        "name": "숙제 완료하기",
+                                                        "description": "이번 주 수학 숙제를 모두 완료해보자!",
+                                                        "state": "IN_PROGRESS",
+                                                        "end_date": "2025-06-20T23:59:59",
+                                                        "created": "2025-06-15T10:30:00",
+                                                        "isStatic": false,
+                                                        "reward": 300,
+                                                        "imageUrl": "https://example.com/homework.jpg"
+                                                    }
+                                                ]
+                                            }
+                                            """
+                                    ),
+                                    @ExampleObject(
+                                            name = "빈 목록 + 포인트",
+                                            value = """
+                                            {
+                                                "currentPoint": 10100,
+                                                "quests": []
+                                            }
+                                            """
+                                    )
+                            }
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "잘못된 파라미터",
+                    content = @Content(mediaType = "application/json")
+            ),
+            @ApiResponse(
+                    responseCode = "401",
+                    description = "인증 실패",
+                    content = @Content(mediaType = "application/json")
+            )
     })
-    public ResponseEntity<List<QuestResponse>> getQuests(
-            @Parameter(description = "퀘스트 타입 (parent, daily)", example = "daily")
+    public ResponseEntity<QuestListWithPointResponse> getQuests(
+            @Parameter(
+                    description = "퀘스트 타입 필터 (parent: 부모퀘스트, daily: 일일퀘스트)",
+                    example = "daily",
+                    schema = @Schema(allowableValues = {"parent", "daily"})
+            )
             @RequestParam(required = false) String type
     ){
         try{
-            //JWT에서 childId 추출 예정, 현재는 임시값!
             UUID childId = getCurrentUserId();
-            List<QuestResponse>quests = questService.getQuestsByType(childId,type);
-            return ResponseEntity.ok(quests);
+            QuestListWithPointResponse response = questService.getQuestsWithPoint(childId, type);
+            return ResponseEntity.ok(response);
         }catch (IllegalArgumentException e){
-            //잘못된 type enum값이 들어온 경우
             return ResponseEntity.badRequest().build();
         }catch (Exception e){
-            //기타 예외
             return ResponseEntity.internalServerError().build();
         }
     }
 
-
-    // 새로 추가되는 상태 변경 API
     @PostMapping("/state")
     @Operation(
             summary = "퀘스트 상태 변경",
-            description = "퀘스트의 상태를 변경합니다. (수락, 완료, 승인, 보상받기)"
+            description = "퀘스트의 상태를 변경합니다. COMPLETED 상태로 변경 시 자동으로 포인트가 지급됩니다."
     )
-    @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "상태 변경 성공"),
-            @ApiResponse(responseCode = "400", description = "잘못된 요청 또는 상태 변경 규칙 위반"),
-            @ApiResponse(responseCode = "404", description = "퀘스트를 찾을 수 없음")
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "상태 변경 성공",
+                    content = @Content(
+                            mediaType = "text/plain",
+                            examples = @ExampleObject(value = "퀘스트 상태가 변경되었습니다.")
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "잘못된 요청 또는 상태 변경 규칙 위반",
+                    content = @Content(
+                            mediaType = "text/plain",
+                            examples = {
+                                    @ExampleObject(name = "잘못된 상태", value = "유효하지 않은 상태입니다: INVALID_STATE"),
+                                    @ExampleObject(name = "변경 불가", value = "COMPLETED에서 IN_PROGRESS로 변경할 수 없습니다."),
+                                    @ExampleObject(name = "퀘스트 없음", value = "퀘스트를 찾을 수 없습니다.")
+                            }
+                    )
+            )
     })
-    public ResponseEntity<String> changeQuestState(@RequestBody QuestStateChangeRequest request){
+    public ResponseEntity<String> changeQuestState(
+            @io.swagger.v3.oas.annotations.parameters.RequestBody(
+                    description = "퀘스트 상태 변경 요청 정보",
+                    required = true,
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = QuestStateChangeRequest.class),
+                            examples = {
+                                    @ExampleObject(
+                                            name = "보상 받기 (포인트 지급)",
+                                            description = "아이가 보상을 받아 퀘스트를 완료할 때",
+                                            value = """
+                                            {
+                                                "questId": "09810a61-69f4-4a68-a9df-6942d54abc0a",
+                                                "childId": "2caf849e-69d7-4136-a7ce-f58d234f1941",
+                                                "state": "COMPLETED"
+                                            }
+                                            """
+                                    )
+                            }
+                    )
+            )
+            @RequestBody QuestStateChangeRequest request){
         try{
             questService.changeQuestState(request);
             return ResponseEntity.ok("퀘스트 상태가 변경되었습니다.");
@@ -74,20 +199,38 @@ public class QuestController {
         } catch (Exception e) {
             return ResponseEntity.internalServerError().body("서버 오류가 발생했습니다.");
         }
-
     }
-    // 부모 퀘스트 생성 API (새로 추가)
+
     @PostMapping("/create")
     @Operation(
             summary = "부모 퀘스트 생성",
-            description = "부모가 아이에게 새로운 퀘스트를 생성합니다."
+            description = "부모가 아이에게 새로운 커스텀 퀘스트를 생성합니다."
     )
-    @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "퀘스트 생성 성공"),
-            @ApiResponse(responseCode = "400", description = "잘못된 요청 데이터"),
-            @ApiResponse(responseCode = "500", description = "서버 오류")
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "퀘스트 생성 성공",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = QuestResponse.class)
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "잘못된 요청 데이터",
+                    content = @Content(mediaType = "application/json")
+            )
     })
-    public ResponseEntity<QuestResponse> createParentQuest(@RequestBody ParentQuestRequest request) {
+    public ResponseEntity<QuestResponse> createParentQuest(
+            @io.swagger.v3.oas.annotations.parameters.RequestBody(
+                    description = "부모 퀘스트 생성 요청 정보",
+                    required = true,
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ParentQuestRequest.class)
+                    )
+            )
+            @RequestBody ParentQuestRequest request) {
         try {
             QuestResponse createdQuest = questService.createParentQuest(request);
             return ResponseEntity.ok(createdQuest);

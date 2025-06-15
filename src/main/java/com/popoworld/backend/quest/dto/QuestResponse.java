@@ -41,4 +41,6 @@ public class QuestResponse {
 
     @JsonProperty("imageUrl")
     private String imageUrl;
+
+
 }
