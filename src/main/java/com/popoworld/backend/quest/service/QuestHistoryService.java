@@ -10,6 +10,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.UUID;
 
 @Service
@@ -30,7 +31,7 @@ public class QuestHistoryService {
                     quest.getDescription(),
                     quest.getState(),
                     quest.getReward(),
-                    LocalDateTime.now()
+                    LocalDateTime.now(ZoneId.of("Asia/Seoul"))
             );
 
             ObjectMapper mapper = new ObjectMapper();

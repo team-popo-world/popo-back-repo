@@ -6,8 +6,10 @@ import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Entity
@@ -15,6 +17,7 @@ import java.util.UUID;
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor
+@Setter
 public class SavingAccount {
     @Id
     @GeneratedValue
@@ -39,4 +42,9 @@ public class SavingAccount {
     private LocalDate endDate; //목표 날짜
 
     private Boolean success; //달성 성공 여부
+
+    @NotNull
+    private Boolean active; //활성화 여부 (true/false)
+
+    private LocalDateTime completedAt; // 완료 시점 (달성/만료 시간)
 }
