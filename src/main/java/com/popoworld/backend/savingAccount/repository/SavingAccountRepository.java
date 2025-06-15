@@ -13,31 +13,37 @@ import java.util.Optional;
 import java.util.UUID;
 
 public interface SavingAccountRepository extends JpaRepository<SavingAccount,UUID> {
-    // 특정 사용자의 활성 저축 통장 존재 여부 확인 (마감일이 지나지 않은 것)
-    @Query("SELECT COUNT(s) > 0 FROM SavingAccount s WHERE s.child = :child AND s.endDate >= :currentDate")
-    boolean existsActiveSavingAccount(@Param("child") User child, @Param("currentDate") LocalDate currentDate);
+    //활성 저축통장 존재 여부 확인
+    @Query("SELECT COUNT(s) > 0 FROM SavingAccount s WHERE s.child = :child AND s.active = true")
+    boolean existsActiveSavingAccount(@Param("child") User child);
 
-    // 특정 사용자의 활성 저축 통장 조회 (마감일이 지나지 않은 것)
-    @Query("SELECT s FROM SavingAccount s WHERE s.child = :child AND s.endDate >= :currentDate")
-    Optional<SavingAccount> findActiveSavingAccount(@Param("child") User child, @Param("currentDate") LocalDate currentDate);
-    // 새로운 메서드들
-    // 만료된 저축통장들 조회 (마감일이 지났는데 success가 false인 것들)
-    @Query("SELECT s FROM SavingAccount s WHERE s.endDate < :currentDate AND s.success = false")
+    //활성 저축통장 조회
+    @Query("SELECT s FROM SavingAccount s WHERE s.child = :child AND s.active = true")
+    Optional<SavingAccount> findActiveSavingAccount(@Param("child") User child);
+
+    //만료된 저축통장들 조회 (active=true이면서 endDate 지난 것들)
+    @Query("SELECT s FROM SavingAccount s WHERE s.endDate < :currentDate AND s.active = true")
     List<SavingAccount> findExpiredSavingAccounts(@Param("currentDate") LocalDate currentDate);
 
-    // 새로운 메서드들
     // 저축통장 포인트 업데이트
     @Modifying
     @Query("UPDATE SavingAccount s SET s.accountPoint = s.accountPoint + :depositPoint WHERE s.savingAccountId = :accountId")
     void updateAccountPoint(@Param("accountId") UUID accountId, @Param("depositPoint") Integer depositPoint);
 
-    // 저축통장 성공 상태 업데이트
+    //success 상태 업데이트
     @Modifying
     @Query("UPDATE SavingAccount s SET s.success = :success WHERE s.savingAccountId = :accountId")
     void updateSuccess(@Param("accountId") UUID accountId, @Param("success") Boolean success);
 
-    // 저축통장 비활성화 (success를 null로 설정)
+    //저축통장 비활성화 (active를 false로 설정)
     @Modifying
-    @Query("UPDATE SavingAccount s SET s.success = null WHERE s.savingAccountId = :accountId")
+    @Query("UPDATE SavingAccount s SET s.active = false WHERE s.savingAccountId = :accountId")
     void deactivateSavingAccount(@Param("accountId") UUID accountId);
+
+    // SavingAccountRepository.java에 추가
+    @Query("SELECT s FROM SavingAccount s WHERE s.child = :child AND s.active = false AND s.endDate >= :recentDate ORDER BY s.endDate DESC")
+    Optional<SavingAccount> findRecentFinishedAccount(@Param("child") User child, @Param("recentDate") LocalDate recentDate);
+
+    // 기존 쿼리 삭제하고 이걸로 교체
+    Optional<SavingAccount> findFirstByChildAndActiveFalseAndCompletedAtIsNotNullOrderByCompletedAtDesc(User child);
 }

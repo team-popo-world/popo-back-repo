@@ -61,7 +61,7 @@ public class InvestService {
         }
         // 2. 새로운 게임 세션 생성
         UUID sessionId = UUID.randomUUID();
-        UUID childId = getCurrentUserId(); // 임시 childId
+        UUID childId = getCurrentUserId();
         LocalDateTime now = LocalDateTime.now(ZoneId.of("Asia/Seoul"));
 
         InvestSession newSession = new InvestSession(
@@ -118,7 +118,6 @@ public class InvestService {
         // 1. sessionId 변환
         UUID investSessionId = UUID.fromString(request.getSessionId());
 
-        // 2. 임시 childId (나중에 JWT에서 가져올 예정)
         UUID childId = getCurrentUserId();
 
         // 3. 시간 파싱

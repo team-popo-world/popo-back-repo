@@ -83,23 +83,9 @@ public class DailyQuestScheduler {
         log.info("✅ 부모퀘스트 만료 처리 완료 - {}개 퀘스트 만료", expiredCount);
     }
 
-    /**
-     * 새로 가입한 아이에게 즉시 일일퀘스트 생성
-     */
-    @Transactional
-    public void createDailyQuestsForNewChild(UUID childId) {
-        log.info("🆕 새 아이 일일퀘스트 생성 - childId: {}", childId);
-
-        List<Quest> newQuests = createDailyQuestsForChild(childId);
-        questRepository.saveAll(newQuests);
-
-        log.info("✅ 새 아이 일일퀘스트 생성 완료 - {}개", newQuests.size());
-    }
 
     /**
      * 특정 아이에게 일일퀘스트 5개 생성
-     * TODO: CHild 테이블 생성하면 childRepository.findAll()로 변경하기!
-     * 지금은 임시 하드코딩된 아이 목록 !!!
      */
     private List<UUID> getAllChildren() {
         List<UUID> Children = childRepository.findAllChildrenByRole("Child");
