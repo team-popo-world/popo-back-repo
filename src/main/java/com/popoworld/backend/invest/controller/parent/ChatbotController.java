@@ -1,10 +1,7 @@
 package com.popoworld.backend.invest.controller.parent;
 
-import com.popoworld.backend.invest.dto.parent.dto.request.ChatbotEditRequestDTO;
-import com.popoworld.backend.invest.dto.parent.dto.request.ChatbotSetRequestDTO;
-import com.popoworld.backend.invest.dto.parent.dto.request.SaveCustomScenarioRequestDTO;
+import com.popoworld.backend.invest.dto.parent.dto.request.*;
 import com.popoworld.backend.invest.dto.parent.dto.response.GetCustomScenarioListResponseDTO;
-import com.popoworld.backend.invest.dto.parent.dto.request.DeleteCustomScenarioRequestDTO;
 import com.popoworld.backend.invest.service.SseEmitters;
 import com.popoworld.backend.invest.service.parent.ParentInvestService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -93,10 +90,10 @@ public class ChatbotController {
     @Operation(summary = "시나리오 리스트 조회",
             description = "시나리오 리스트 조회"
     )
-    @GetMapping("/items")
-    public ResponseEntity<List<GetCustomScenarioListResponseDTO>> getScenarios(@RequestParam int page, @RequestParam int size) {
-        UUID childId = getCurrentUserId();
-        PageRequest pageRequest = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createAt"));
+    @PostMapping("/items")
+    public ResponseEntity<List<GetCustomScenarioListResponseDTO>> getScenarios(@RequestBody ScenarioListDTO requestDTO) {
+        UUID childId = requestDTO.getChildId();
+        PageRequest pageRequest = PageRequest.of(requestDTO.getPage(), requestDTO.getSize(), Sort.by(Sort.Direction.DESC, "createAt"));
         List<GetCustomScenarioListResponseDTO> scenarios = parentInvestService.getScenarioList(childId, pageRequest);
         return ResponseEntity.ok(scenarios);
     }
