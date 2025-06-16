@@ -26,5 +26,5 @@ public interface InvestScenarioRepository extends JpaRepository<InvestScenario, 
     // 새로 추가 - 특정 챕터 + 커스텀 여부로 시나리오 리스트 조회
     List<InvestScenario> findByInvestChapter_ChapterIdAndIsCustom(String chapterId, Boolean isCustom);
 
-    Page<InvestScenario> findByChildIdAndInvestChapter_Id(UUID childId, String chapterId, Pageable pageable);
+    Page<InvestScenario> findByChildIdAndInvestChapter_ChapterId(UUID childId, String chapterId, Pageable pageable);
 }
