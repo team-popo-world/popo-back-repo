@@ -27,5 +27,6 @@ public class Product {
     private String productName;
     private int productPrice;
     private int productStock;
+    private int exp;
     private String productImage;
 }
