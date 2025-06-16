@@ -115,7 +115,7 @@ public class ParentInvestServiceImpl implements ParentInvestService {
     @Override
     public CustomScenarioListDTO getScenarioList(UUID childId, String chapterId, PageRequest pageRequest) {
         // 시나리오 리스트 가져온 후에
-        List<InvestScenario> scenario =  investScenarioRepository.findByChildIdAndChapter_Id(childId, chapterId, pageRequest).getContent();
+        List<InvestScenario> scenario =  investScenarioRepository.findByChildIdAndInvestChapter_Id(childId, chapterId, pageRequest).getContent();
 
         CustomScenarioListDTO response = new CustomScenarioListDTO();
         response.setTotalPageSize(scenario.size() / pageRequest.getPageSize() + 1);
