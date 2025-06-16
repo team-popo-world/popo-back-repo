@@ -1,6 +1,7 @@
 package com.popoworld.backend.invest.controller.parent;
 
 import com.popoworld.backend.invest.dto.parent.dto.request.*;
+import com.popoworld.backend.invest.dto.parent.dto.response.CustomScenarioListDTO;
 import com.popoworld.backend.invest.dto.parent.dto.response.GetCustomScenarioListResponseDTO;
 import com.popoworld.backend.invest.service.SseEmitters;
 import com.popoworld.backend.invest.service.parent.ParentInvestService;
@@ -91,10 +92,10 @@ public class ChatbotController {
             description = "시나리오 리스트 조회"
     )
     @PostMapping("/items")
-    public ResponseEntity<List<GetCustomScenarioListResponseDTO>> getScenarios(@RequestBody ScenarioListDTO requestDTO) {
+    public ResponseEntity<CustomScenarioListDTO> getScenarios(@RequestBody ScenarioListDTO requestDTO) {
         UUID childId = requestDTO.getChildId();
         PageRequest pageRequest = PageRequest.of(requestDTO.getPage(), requestDTO.getSize(), Sort.by(Sort.Direction.DESC, "createAt"));
-        List<GetCustomScenarioListResponseDTO> scenarios = parentInvestService.getScenarioList(childId, requestDTO.getChapterId(), pageRequest);
+        CustomScenarioListDTO scenarios = parentInvestService.getScenarioList(childId, requestDTO.getChapterId(), pageRequest);
         return ResponseEntity.ok(scenarios);
     }
 }
