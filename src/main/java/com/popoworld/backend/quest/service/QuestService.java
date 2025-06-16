@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -25,9 +26,13 @@ public class QuestService {
     private final UserRepository userRepository;
     private final QuestHistoryService questHistoryService;
 
-    // 🎯 메인 메서드: 퀘스트 목록 + 포인트 (래퍼 객체 사용)
+    // 🎯 메인 메서드: 퀘스트 목록 + 포인트 (실시간 만료 처리 추가)
+    @Transactional
     public QuestListWithPointResponse getQuestsWithPoint(UUID childId, String type) {
-        // 1. 퀘스트 목록 조회
+        // 1. 부모퀘스트 실시간 만료 처리
+        checkAndExpireParentQuests(childId);
+
+        // 2. 퀘스트 목록 조회
         List<Quest> quests;
         if (type != null) {
             Quest.QuestType questType = Quest.QuestType.valueOf(type.toUpperCase());
@@ -36,19 +41,49 @@ public class QuestService {
             quests = questRepository.findByChildId(childId);
         }
 
-        // 2. 퀘스트 DTO 변환 (포인트 정보 없이)
+        // 3. 퀘스트 DTO 변환 (포인트 정보 없이)
         List<QuestResponse> questResponses = quests.stream()
                 .map(this::convertToDto)
                 .collect(Collectors.toList());
 
-        // 3. 사용자 포인트 조회
+        // 4. 사용자 포인트 조회
         Integer currentPoint = getUserPoint(childId);
 
-        // 4. 래퍼 객체로 합쳐서 반환
+        // 5. 래퍼 객체로 합쳐서 반환
         return QuestListWithPointResponse.builder()
                 .currentPoint(currentPoint)
                 .quests(questResponses)
                 .build();
+    }
+
+    /**
+     * 특정 아이의 부모퀘스트 중 만료된 것들을 실시간으로 EXPIRED 처리
+     */
+    @Transactional
+    public void checkAndExpireParentQuests(UUID childId) {
+        LocalDateTime nowKST = LocalDateTime.now(ZoneId.of("Asia/Seoul"));
+
+        // 해당 아이의 부모퀘스트 중 만료 대상 조회
+        List<Quest> expirableQuests = questRepository.findExpirableParentQuests(
+                childId,
+                Quest.QuestType.PARENT,
+                nowKST
+        );
+
+        for (Quest quest : expirableQuests) {
+            log.info("⏰ 부모퀘스트 실시간 만료 처리: {} (종료시간: {})",
+                    quest.getName(), quest.getEndDate());
+
+            quest.changeState(QuestState.EXPIRED);
+            questRepository.save(quest);
+
+            // 만료 로그 전송
+            questHistoryService.logQuest(quest);
+        }
+
+        if (!expirableQuests.isEmpty()) {
+            log.info("✅ 부모퀘스트 실시간 만료 처리 완료: {}개", expirableQuests.size());
+        }
     }
 
     // 🔒 안전한 포인트 조회
@@ -106,6 +141,18 @@ public class QuestService {
     public void changeQuestState(QuestStateChangeRequest request) {
         Quest quest = questRepository.findById(request.getQuestId())
                 .orElseThrow(() -> new IllegalArgumentException("퀘스트를 찾을 수 없습니다."));
+
+        // 부모퀘스트인 경우 만료 체크
+        if (quest.getType() == Quest.QuestType.PARENT) {
+            LocalDateTime nowKST = LocalDateTime.now(ZoneId.of("Asia/Seoul"));
+            if (quest.getEndDate().isBefore(nowKST) &&
+                    quest.getState() != QuestState.COMPLETED &&
+                    quest.getState() != QuestState.EXPIRED) {
+
+                log.info("⏰ 상태 변경 시 만료된 퀘스트 발견: {}", quest.getName());
+                throw new IllegalArgumentException("만료된 퀘스트는 상태를 변경할 수 없습니다.");
+            }
+        }
 
         QuestState newState;
         try {
