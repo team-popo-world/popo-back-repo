@@ -13,7 +13,6 @@ import java.util.UUID;
 @AllArgsConstructor
 public class ParentQuestRequest {
     private UUID childId;
-    private UUID parentId;
     private String name;
     private String description;
     private Integer reward;

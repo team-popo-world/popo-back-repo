@@ -232,7 +232,8 @@ public class QuestController {
             )
             @RequestBody ParentQuestRequest request) {
         try {
-            QuestResponse createdQuest = questService.createParentQuest(request);
+            UUID parentId = getCurrentUserId();
+            QuestResponse createdQuest = questService.createParentQuest(request,parentId);
             return ResponseEntity.ok(createdQuest);
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().build();
