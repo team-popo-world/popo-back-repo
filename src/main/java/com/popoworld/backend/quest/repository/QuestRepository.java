@@ -20,12 +20,37 @@ public interface QuestRepository extends JpaRepository<Quest, UUID> {
     //아이별+타입별 퀘스트 조회
     List<Quest> findByChildIdAndType(UUID childId, Quest.QuestType type);
 
-    //스케줄러용
+    //스케줄러용 - 일일퀘스트 삭제
     @Modifying //select가 아니라 db에 변경을 가하는 쿼리임을 나타냄
     @Query("DELETE FROM Quest q WHERE q.type = :type")
     void deleteByType(@Param("type")Quest.QuestType type);
 
-    // 부모퀘스트 만료 처리용 - 이 메서드를 추가하세요!
+    /**
+     * 특정 아이의 만료 가능한 부모퀘스트 조회
+     * (만료시간이 지났지만 아직 EXPIRED 상태가 아닌 퀘스트들)
+     */
+    @Query("SELECT q FROM Quest q WHERE q.childId = :childId " +
+            "AND q.type = :questType " +
+            "AND q.endDate < :now " +
+            "AND q.state NOT IN ('COMPLETED', 'EXPIRED')")
+    List<Quest> findExpirableParentQuests(
+            @Param("childId") UUID childId,
+            @Param("questType") Quest.QuestType questType,
+            @Param("now") LocalDateTime now
+    );
+
+    /**
+     * 전체 만료 가능한 부모퀘스트 조회 (스케줄러 백업용)
+     */
+    @Query("SELECT q FROM Quest q WHERE q.type = :questType " +
+            "AND q.endDate < :now " +
+            "AND q.state NOT IN ('COMPLETED', 'EXPIRED')")
+    List<Quest> findAllExpirableParentQuests(
+            @Param("questType") Quest.QuestType questType,
+            @Param("now") LocalDateTime now
+    );
+
+    // 기존 스케줄러용 메서드 (사용 안함으로 변경 예정)
     @Modifying
     @Query("UPDATE Quest q SET q.state = :expiredState WHERE q.type = :questType AND q.endDate < :now AND q.state = :activeState")
     int updateExpiredParentQuests(
