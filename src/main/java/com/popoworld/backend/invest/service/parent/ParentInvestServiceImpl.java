@@ -7,6 +7,7 @@ import com.popoworld.backend.invest.dto.parent.dto.request.ChatbotEditRequestDTO
 import com.popoworld.backend.invest.dto.parent.dto.request.ChatbotSetRequestDTO;
 import com.popoworld.backend.invest.dto.parent.dto.request.ChatbotStoryRequestDTO;
 import com.popoworld.backend.invest.dto.parent.dto.request.SaveCustomScenarioRequestDTO;
+import com.popoworld.backend.invest.dto.parent.dto.response.CustomScenarioListDTO;
 import com.popoworld.backend.invest.dto.parent.dto.response.GetCustomScenarioListResponseDTO;
 import com.popoworld.backend.invest.entity.InvestChapter;
 import com.popoworld.backend.invest.entity.InvestScenario;
@@ -112,11 +113,15 @@ public class ParentInvestServiceImpl implements ParentInvestService {
     }
 
     @Override
-    public List<GetCustomScenarioListResponseDTO> getScenarioList(UUID childId, String chapterId, PageRequest pageRequest) {
+    public CustomScenarioListDTO getScenarioList(UUID childId, String chapterId, PageRequest pageRequest) {
         // 시나리오 리스트 가져온 후에
         List<InvestScenario> scenario =  investScenarioRepository.findByChildIdAndChapterId(childId, chapterId, pageRequest).getContent();
 
+        CustomScenarioListDTO response = new CustomScenarioListDTO();
+        response.setTotalPageSize(scenario.size() / pageRequest.getPageSize() + 1);
+        response.setScenarioList(scenario.stream().map(s -> GetCustomScenarioListResponseDTO.builder().scenario(s).build()).toList());
+
         // dto로 매핑
-        return scenario.stream().map(s -> GetCustomScenarioListResponseDTO.builder().scenario(s).build()).toList();
+        return response;
     }
 }
