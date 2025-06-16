@@ -112,9 +112,10 @@ public class ParentInvestServiceImpl implements ParentInvestService {
     }
 
     @Override
-    public List<GetCustomScenarioListResponseDTO> getScenarioList(UUID childId, PageRequest pageRequest) {
+    public List<GetCustomScenarioListResponseDTO> getScenarioList(UUID childId, String chapterId, PageRequest pageRequest) {
         // 시나리오 리스트 가져온 후에
-        List<InvestScenario> scenario =  investScenarioRepository.findByChildId(childId, pageRequest).getContent();
+        List<InvestScenario> scenario =  investScenarioRepository.findByChildIdAndChapterId(childId, chapterId, pageRequest).getContent();
+
         // dto로 매핑
         return scenario.stream().map(s -> GetCustomScenarioListResponseDTO.builder().scenario(s).build()).toList();
     }

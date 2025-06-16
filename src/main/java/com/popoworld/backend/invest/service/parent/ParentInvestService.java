@@ -11,7 +11,7 @@ import java.util.UUID;
 
 public interface ParentInvestService {
     void deleteScenario(UUID scenarioId);
-    List<GetCustomScenarioListResponseDTO> getScenarioList(UUID childId, PageRequest pageRequest);
+    List<GetCustomScenarioListResponseDTO> getScenarioList(UUID childId, String chapterId ,PageRequest pageRequest);
     void setEditScenario(UUID userId, ChatbotSetRequestDTO requestDTO);
     void processChatMessage(UUID userId, ChatbotEditRequestDTO requestDTO);
 

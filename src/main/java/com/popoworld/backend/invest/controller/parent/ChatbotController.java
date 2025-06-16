@@ -94,7 +94,7 @@ public class ChatbotController {
     public ResponseEntity<List<GetCustomScenarioListResponseDTO>> getScenarios(@RequestBody ScenarioListDTO requestDTO) {
         UUID childId = requestDTO.getChildId();
         PageRequest pageRequest = PageRequest.of(requestDTO.getPage(), requestDTO.getSize(), Sort.by(Sort.Direction.DESC, "createAt"));
-        List<GetCustomScenarioListResponseDTO> scenarios = parentInvestService.getScenarioList(childId, pageRequest);
+        List<GetCustomScenarioListResponseDTO> scenarios = parentInvestService.getScenarioList(childId, requestDTO.getChapterId(), pageRequest);
         return ResponseEntity.ok(scenarios);
     }
 }
