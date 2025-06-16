@@ -119,7 +119,7 @@ public class QuestService {
     }
 
     @Transactional
-    public QuestResponse createParentQuest(ParentQuestRequest request) {
+    public QuestResponse createParentQuest(ParentQuestRequest request,UUID parentId) {
         LocalDateTime endDateTime = LocalDateTime.parse(request.getEndDate());
         Quest parentQuest = Quest.createParentQuest(
                 request.getChildId(),
