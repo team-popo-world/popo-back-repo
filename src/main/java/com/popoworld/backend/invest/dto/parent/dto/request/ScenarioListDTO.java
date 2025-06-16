@@ -11,4 +11,5 @@ public class ScenarioListDTO {
     private int page;
     private int size;
     private UUID childId;
+    private String chapterId;
 }
