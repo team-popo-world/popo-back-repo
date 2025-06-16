@@ -2,6 +2,7 @@ package com.popoworld.backend.attendance.service;
 
 import com.popoworld.backend.User.User;
 import com.popoworld.backend.User.repository.UserRepository;
+import com.popoworld.backend.attendance.dto.AttendanceCheckResponse;
 import com.popoworld.backend.attendance.dto.TodayAttendanceRequest;
 import com.popoworld.backend.attendance.dto.WeekAttendanceResponse;
 import com.popoworld.backend.attendance.entity.DailyCheck;
@@ -64,9 +65,10 @@ public class AttendanceService {
         return result;
     }
 
-    // POST - 출석 체크 (트랜잭션 추가)
+    // AttendanceService.java - checkAttendance 메서드 수정
+
     @Transactional
-    public String checkAttendance(UUID childId, TodayAttendanceRequest request) {
+    public AttendanceCheckResponse checkAttendance(UUID childId, TodayAttendanceRequest request) {
         System.out.println("=== 디버그 정보 ===");
         System.out.println("dayOfWeek: " + request.getDayOfWeek());
         System.out.println("isAttended: " + request.isAttended());
@@ -98,13 +100,16 @@ public class AttendanceService {
             // 일주일 완주 확인 및 포인트 지급
             if (isWeekCompleted(childId)) {
                 addPointsToUser(childId, WEEK_COMPLETION_REWARD);
-                return "🎉 일주일 완주! 보상 " + WEEK_COMPLETION_REWARD + "원!";
+                System.out.println("🎉 일주일 완주! 보상 " + WEEK_COMPLETION_REWARD + "원!");
             }
-            return "출석 완료!";
+        } else {
+            System.out.println("isAttended가 false여서 출석하지 않음");
         }
 
-        System.out.println("isAttended가 false여서 출석하지 않음 반환");
-        return "출석하지 않음";
+        // 업데이트된 주간 출석 현황 조회
+        List<WeekAttendanceResponse> weekAttendance = getAttendanceList(childId);
+
+        return new AttendanceCheckResponse(weekAttendance);
     }
 
     private LocalDate getThisWeekDate(KoreanDayOfWeek dayEnum) {

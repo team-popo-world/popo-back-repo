@@ -1,5 +1,6 @@
 package com.popoworld.backend.attendance.controller;
 
+import com.popoworld.backend.attendance.dto.AttendanceCheckResponse;
 import com.popoworld.backend.attendance.dto.TodayAttendanceRequest;
 import com.popoworld.backend.attendance.dto.WeekAttendanceResponse;
 import com.popoworld.backend.attendance.service.AttendanceService;
@@ -29,16 +30,18 @@ public class AttendanceController {
 
 
     @PostMapping
-    //출석 체크
-    public ResponseEntity<String>checkAttendance(@RequestBody TodayAttendanceRequest request){
+//출석 체크
+    public ResponseEntity<AttendanceCheckResponse> checkAttendance(@RequestBody TodayAttendanceRequest request){
         try{
             UUID childId = getCurrentUserId();
-            String result = attendanceService.checkAttendance(childId,request);
+            AttendanceCheckResponse result = attendanceService.checkAttendance(childId, request);
             return ResponseEntity.status(HttpStatus.CREATED).body(result);
         } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(e.getMessage()); // 이미 출석한 경우
+            // 에러 시에는 기존 방식대로 String 메시지만 반환하거나
+            // 또는 빈 AttendanceCheckResponse 반환
+            return ResponseEntity.badRequest().build(); // 또는 별도 에러 처리
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body("잘못된 요청");
+            return ResponseEntity.badRequest().build(); // 또는 별도 에러 처리
         }
     }
 }
