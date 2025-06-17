@@ -25,8 +25,8 @@ public class MarketController {
 
     // 구매 API
     @PostMapping("/buy")
-    public ResponseEntity<String> purchaseItem(@RequestBody PurchaseRequestDTO request) {
-        marketService.purchaseItem(request);
+    public ResponseEntity<String> purchaseItem() {
+
         return ResponseEntity.ok("구매 처리 완료");
     }
 

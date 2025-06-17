@@ -1,5 +1,6 @@
 package com.popoworld.backend.invest.controller.parent;
 
+import com.popoworld.backend.global.token.JwtTokenProvider;
 import com.popoworld.backend.invest.dto.parent.dto.request.*;
 import com.popoworld.backend.invest.dto.parent.dto.response.CustomScenarioListDTO;
 import com.popoworld.backend.invest.dto.parent.dto.response.GetCustomScenarioListResponseDTO;
@@ -7,6 +8,7 @@ import com.popoworld.backend.invest.service.SseEmitters;
 import com.popoworld.backend.invest.service.parent.ParentInvestService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -14,6 +16,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
+import java.nio.file.AccessDeniedException;
 import java.util.List;
 import java.util.UUID;
 
@@ -25,6 +28,7 @@ import static com.popoworld.backend.global.token.SecurityUtil.getCurrentUserId;
 @Tag(name="Chatbot", description = "시나리오 업데이트 챗봇 API")
 public class ChatbotController {
 
+    private final JwtTokenProvider jwtTokenProvider;
     private final ParentInvestService parentInvestService;
     private final SseEmitters sseEmitters;
 
@@ -56,8 +60,13 @@ public class ChatbotController {
 
     @Operation(summary = "SSE 연결", description = "챗봇 업데이트 알림용 SSE 연결")
     @GetMapping("/sse")
-    public SseEmitter connect() {
-        UUID userId = getCurrentUserId();
+    public SseEmitter connect(HttpServletRequest request) throws AccessDeniedException {
+        String token = request.getHeader("Authorization");
+        if (token == null || !token.startsWith("Bearer ")) {
+            throw new AccessDeniedException("Missing or invalid token");
+        }
+
+        UUID userId = UUID.fromString(jwtTokenProvider.getUserIdFromToken(token.substring(7)));
         return sseEmitters.create(userId);
     }
 

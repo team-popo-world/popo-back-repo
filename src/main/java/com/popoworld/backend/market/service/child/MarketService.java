@@ -35,11 +35,9 @@ public class MarketService {
             case "parent":
                 products = productRepository.findByUser(childId);
                 break;
-            case "inventory":
-                products = inventoryRepository.findByChild(childId).stream()
-                        .map(Inventory::getProduct)
-                        .toList();
-                break;
+//            case "inventory":
+//
+//                break;
             default:
                 throw new IllegalArgumentException("잘못된 타입입니다.");
         }
@@ -49,15 +47,8 @@ public class MarketService {
                 .toList();
     }
 
-    public void purchaseItem(PurchaseRequestDTO request) {
-        if (request.getAmount() == 0) {
-            inventoryRepository.deleteById(request.getId());
-        } else {
-            Inventory inventory = inventoryRepository.findById(request.getId())
-                    .orElseThrow(() -> new EntityNotFoundException("해당 아이템 없음"));
-            inventory.setStock(request.getAmount());
-            inventoryRepository.save(inventory);
-        }
+    public void purchaseItem() {
+
     }
 
 }
