@@ -14,7 +14,7 @@ import java.util.List;
 @RequestMapping("/api/market")
 public class MarketController {
 
-    private final MarketService marketService;
+//    private final MarketService marketService;
 
     // 조회 API
 //    @GetMapping
@@ -24,11 +24,11 @@ public class MarketController {
 //    }
 
     // 구매 API
-    @PostMapping("/buy")
-    public ResponseEntity<String> purchaseItem() {
-
-        return ResponseEntity.ok("구매 처리 완료");
-    }
+//    @PostMapping("/buy")
+//    public ResponseEntity<String> purchaseItem() {
+//
+//        return ResponseEntity.ok("구매 처리 완료");
+//    }
 
     // 사용 API
 
