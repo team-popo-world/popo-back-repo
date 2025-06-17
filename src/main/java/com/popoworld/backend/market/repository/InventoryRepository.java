@@ -12,9 +12,5 @@ import java.util.UUID;
 
 @Repository
 public interface InventoryRepository extends JpaRepository<Inventory, UUID> {
-    List<Inventory> findAll(); // 전체 inventory
 
-    Optional<Inventory> findByProduct(Product product);
-
-    void deleteByProduct(Product product);
 }
