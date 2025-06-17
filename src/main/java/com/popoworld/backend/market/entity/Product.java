@@ -5,13 +5,11 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 
 import java.util.UUID;
 
 @Entity
 @Getter
-@Setter
 @AllArgsConstructor
 @NoArgsConstructor
 @Table(name = "products")
@@ -22,12 +20,15 @@ public class Product {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "child_id")
-    private User user;
+    private User user; //null이면 먹이상점
 
-    private String productName;
-    private int productPrice;
-    private int productStock;
-    private int exp;
-    private String state;
+    private String productName; //상품 이름
+    private int productPrice; //상품 가격
+    private int productStock; //재고
     private String productImage;
+
+    @Enumerated(EnumType.STRING)
+    private ProductStatus state; //REGISTERED, PURCHASE
+    private int exp; //상품 경험치 (NPC 상품만 경험치 있음)
+
 }
