@@ -21,12 +21,13 @@ public class Product {
     private UUID productId;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "parent_id")
-    private User parent;
+    @JoinColumn(name = "child_id")
+    private User user;
 
     private String productName;
     private int productPrice;
     private int productStock;
     private int exp;
+    private String state;
     private String productImage;
 }
