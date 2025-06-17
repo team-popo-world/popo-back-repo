@@ -41,6 +41,7 @@ public class WebSecurityConfig {
                                 .requestMatchers(
                                         "/auth/signup",
                                         "/auth/login").permitAll()
+                                .requestMatchers("/api/chatbot/sse").permitAll()
                                 .anyRequest().authenticated()
                 )
                 .addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider), UsernamePasswordAuthenticationFilter.class)
