@@ -201,38 +201,55 @@ public class QuestController {
         }
     }
 
+// 📁 quest/controller/QuestController.java - createParentQuest 메서드의 예시 수정
+
     @PostMapping("/create")
     @Operation(
             summary = "부모 퀘스트 생성",
-            description = "부모가 아이에게 새로운 커스텀 퀘스트를 생성합니다."
+            description = "부모가 아이에게 새로운 커스텀 퀘스트를 생성합니다. 마감날짜는 YYYY-MM-DD 형식으로 보내주시면 자동으로 해당 날짜의 23:59:59로 설정됩니다."
     )
-    @ApiResponses(value = {
-            @ApiResponse(
-                    responseCode = "200",
-                    description = "퀘스트 생성 성공",
-                    content = @Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = QuestResponse.class)
-                    )
-            ),
-            @ApiResponse(
-                    responseCode = "400",
-                    description = "잘못된 요청 데이터",
-                    content = @Content(mediaType = "application/json")
-            )
-    })
     public ResponseEntity<QuestResponse> createParentQuest(
             @io.swagger.v3.oas.annotations.parameters.RequestBody(
                     description = "부모 퀘스트 생성 요청 정보",
                     required = true,
                     content = @Content(
                             mediaType = "application/json",
-                            schema = @Schema(implementation = ParentQuestRequest.class)
+                            schema = @Schema(implementation = ParentQuestRequest.class),
+                            examples = {
+                                    @ExampleObject(
+                                            name = "부모 퀘스트 생성",
+                                            value = """
+                                        {
+                                            "childId": "2caf849e-69d7-4136-a7ce-f58d234f1941",
+                                            "name": "해워니퀘스트",
+                                            "description": "클리어하라!!!",
+                                            "reward": 2000,
+                                            "endDate": "2024-09-01",
+                                            "imageUrl": "https://example.com/image.jpg"
+                                        }
+                                        """
+                                    ),
+                                    @ExampleObject(
+                                            name = "숙제 퀘스트",
+                                            value = """
+                                        {
+                                            "childId": "2caf849e-69d7-4136-a7ce-f58d234f1941",
+                                            "name": "수학 숙제 완료하기",
+                                            "description": "이번 주 수학 워크북 10페이지 완료",
+                                            "reward": 1500,
+                                            "endDate": "2024-09-07",
+                                            "imageUrl": null
+                                        }
+                                        """
+                                    )
+                            }
                     )
             )
             @RequestBody ParentQuestRequest request) {
+
         try {
-            QuestResponse createdQuest = questService.createParentQuest(request);
+            UUID parentId = getCurrentUserId();
+            QuestResponse createdQuest = questService.createParentQuest(request,parentId);
             return ResponseEntity.ok(createdQuest);
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().build();

@@ -26,67 +26,68 @@ public class DailyQuestScheduler {
     private final QuestRepository questRepository;
     private final UserRepository childRepository;
 
-
     /**
-     * 매일 자정에 일일퀘스트 리셋 및 부모퀘스트 만료 처리
+     * 매일 자정에 일일퀘스트만 리셋
+     * 부모퀘스트는 실시간 처리로 변경
      */
-    // 매일 새벽 5시에 실행
-    @Scheduled(cron = "0 0 * * * *", zone = "Asia/Seoul")
-//    @Scheduled(cron = "0 */1 * * * *", zone = "Asia/Seoul") // 1분마다
+    @Scheduled(cron = "0 0 0 * * *", zone = "Asia/Seoul") // 매일 자정
     @Transactional
-    public void dailyMaintenance() {
-        log.info("🎮🎮🎮 스케줄러 실행됨! 현재시간: {}", LocalDateTime.now());
-        log.info("🎮 일일 유지보수 시작 - {}", LocalDateTime.now());
+    public void resetDailyQuests() {
+        log.info("🎮 일일퀘스트 리셋 시작 - {}", LocalDateTime.now());
 
         try {
-            // 1단계: 부모퀘스트 만료 처리 (먼저 처리)
-            expireOverdueParentQuests();
-
-            // 2단계: 모든 일일퀘스트 삭제
+            // 1단계: 모든 일일퀘스트 삭제
             questRepository.deleteByType(Quest.QuestType.DAILY);
             log.info("🗑️ 기존 일일퀘스트 모두 삭제 완료");
 
-            // 3단계: 모든 아이들 목록 조회
+            // 2단계: 모든 아이들 목록 조회
             List<UUID> allChildren = getAllChildren();
             log.info("📊 전체 아이 수: {}", allChildren.size());
 
-            // 4단계: 각 아이에게 새로운 일일퀘스트 생성
+            // 3단계: 각 아이에게 새로운 일일퀘스트 생성
             int totalCreated = 0;
             for (UUID childId : allChildren) {
                 List<Quest> newQuests = createDailyQuestsForChild(childId);
                 questRepository.saveAll(newQuests);
                 totalCreated += newQuests.size();
-                log.info("✅ 아이 [{}]에게 퀘스트 {}개 생성", childId, newQuests.size());
+                log.info("✅ 아이 [{}]에게 일일퀘스트 {}개 생성", childId, newQuests.size());
             }
 
-            log.info("✅ 일일 유지보수 완료 - 총 {}개 퀘스트 생성", totalCreated);
+            log.info("✅ 일일퀘스트 리셋 완료 - 총 {}개 퀘스트 생성", totalCreated);
 
         } catch (Exception e) {
-            log.error("❌ 일일 유지보수 실패", e);
+            log.error("❌ 일일퀘스트 리셋 실패", e);
         }
     }
 
     /**
-     * 부모퀘스트 만료 처리 (쿼리 방식) - 새로 추가된 메서드
+     * 선택사항: 하루에 한 번 부모퀘스트 정리 (보험용)
+     * 실시간 처리에서 놓친 것들을 위한 백업 처리
      */
+    @Scheduled(cron = "0 30 0 * * *", zone = "Asia/Seoul") // 매일 새벽 0시 30분
     @Transactional
-    public void expireOverdueParentQuests() {
-        log.info("⏰ 부모퀘스트 만료 처리 시작");
+    public void cleanupExpiredParentQuests() {
+        log.info("🧹 부모퀘스트 정리 작업 시작");
 
-        // 한국 시간으로 비교
         LocalDateTime nowKST = LocalDateTime.now(ZoneId.of("Asia/Seoul"));
-        log.info("🕐 현재 한국 시간: {}", nowKST);
 
-        int expiredCount = questRepository.updateExpiredParentQuests(
-                nowKST,  // 한국 시간 사용
+        List<Quest> expiredQuests = questRepository.findAllExpirableParentQuests(
                 Quest.QuestType.PARENT,
-                QuestState.EXPIRED,
-                QuestState.COMPLETED
+                nowKST
         );
 
-        log.info("✅ 부모퀘스트 만료 처리 완료 - {}개 퀘스트 만료", expiredCount);
-    }
+        for (Quest quest : expiredQuests) {
+            quest.changeState(QuestState.EXPIRED);
+            log.info("🧹 정리 작업으로 만료 처리: {}", quest.getName());
+        }
 
+        if (!expiredQuests.isEmpty()) {
+            questRepository.saveAll(expiredQuests);
+            log.info("🧹 부모퀘스트 정리 완료: {}개", expiredQuests.size());
+        } else {
+            log.info("🧹 정리할 만료 퀘스트 없음");
+        }
+    }
 
     /**
      * 특정 아이에게 일일퀘스트 5개 생성

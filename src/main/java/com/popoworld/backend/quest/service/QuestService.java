@@ -2,7 +2,10 @@ package com.popoworld.backend.quest.service;
 
 import com.popoworld.backend.User.User;
 import com.popoworld.backend.User.repository.UserRepository;
-import com.popoworld.backend.quest.dto.*;
+import com.popoworld.backend.quest.dto.ParentQuestRequest;
+import com.popoworld.backend.quest.dto.QuestListWithPointResponse;
+import com.popoworld.backend.quest.dto.QuestResponse;
+import com.popoworld.backend.quest.dto.QuestStateChangeRequest;
 import com.popoworld.backend.quest.entity.Quest;
 import com.popoworld.backend.quest.enums.QuestState;
 import com.popoworld.backend.quest.repository.QuestRepository;
@@ -11,7 +14,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -25,9 +30,13 @@ public class QuestService {
     private final UserRepository userRepository;
     private final QuestHistoryService questHistoryService;
 
-    // 🎯 메인 메서드: 퀘스트 목록 + 포인트 (래퍼 객체 사용)
+    // 🎯 메인 메서드: 퀘스트 목록 + 포인트 (실시간 만료 처리 추가)
+    @Transactional
     public QuestListWithPointResponse getQuestsWithPoint(UUID childId, String type) {
-        // 1. 퀘스트 목록 조회
+        // 1. 부모퀘스트 실시간 만료 처리
+        checkAndExpireParentQuests(childId);
+
+        // 2. 퀘스트 목록 조회
         List<Quest> quests;
         if (type != null) {
             Quest.QuestType questType = Quest.QuestType.valueOf(type.toUpperCase());
@@ -36,19 +45,49 @@ public class QuestService {
             quests = questRepository.findByChildId(childId);
         }
 
-        // 2. 퀘스트 DTO 변환 (포인트 정보 없이)
+        // 3. 퀘스트 DTO 변환 (포인트 정보 없이)
         List<QuestResponse> questResponses = quests.stream()
                 .map(this::convertToDto)
                 .collect(Collectors.toList());
 
-        // 3. 사용자 포인트 조회
+        // 4. 사용자 포인트 조회
         Integer currentPoint = getUserPoint(childId);
 
-        // 4. 래퍼 객체로 합쳐서 반환
+        // 5. 래퍼 객체로 합쳐서 반환
         return QuestListWithPointResponse.builder()
                 .currentPoint(currentPoint)
                 .quests(questResponses)
                 .build();
+    }
+
+    /**
+     * 특정 아이의 부모퀘스트 중 만료된 것들을 실시간으로 EXPIRED 처리
+     */
+    @Transactional
+    public void checkAndExpireParentQuests(UUID childId) {
+        LocalDateTime nowKST = LocalDateTime.now(ZoneId.of("Asia/Seoul"));
+
+        // 해당 아이의 부모퀘스트 중 만료 대상 조회
+        List<Quest> expirableQuests = questRepository.findExpirableParentQuests(
+                childId,
+                Quest.QuestType.PARENT,
+                nowKST
+        );
+
+        for (Quest quest : expirableQuests) {
+            log.info("⏰ 부모퀘스트 실시간 만료 처리: {} (종료시간: {})",
+                    quest.getName(), quest.getEndDate());
+
+            quest.changeState(QuestState.EXPIRED);
+            questRepository.save(quest);
+
+            // 만료 로그 전송
+            questHistoryService.logQuest(quest);
+        }
+
+        if (!expirableQuests.isEmpty()) {
+            log.info("✅ 부모퀘스트 실시간 만료 처리 완료: {}개", expirableQuests.size());
+        }
     }
 
     // 🔒 안전한 포인트 조회
@@ -84,28 +123,75 @@ public class QuestService {
     }
 
     @Transactional
-    public QuestResponse createParentQuest(ParentQuestRequest request) {
-        LocalDateTime endDateTime = LocalDateTime.parse(request.getEndDate());
-        Quest parentQuest = Quest.createParentQuest(
-                request.getChildId(),
-                request.getName(),
-                request.getDescription(),
-                request.getReward(),
-                endDateTime,
-                request.getImageUrl()
-        );
-        Quest savedQuest = questRepository.save(parentQuest);
+    public QuestResponse createParentQuest(ParentQuestRequest request,UUID parentId) {
+        log.info("🎯 부모 퀘스트 생성 - parentId: {}, childId: {}, name: {}, endDate: {}",
+                parentId, request.getChildId(), request.getName(), request.getEndDate());
 
-        //퀘스트 생성 로그 전송
-        questHistoryService.logQuest(savedQuest);
+        try {
+            // 🔧 날짜만 받아서 해당 날짜의 23:59:59로 변환
+            LocalDateTime endDateTime = convertDateToEndOfDay(request.getEndDate());
 
-        return convertToDto(savedQuest);
+            Quest parentQuest = Quest.createParentQuest(
+                    request.getChildId(),
+                    request.getName(),
+                    request.getDescription(),
+                    request.getReward(),
+                    endDateTime,
+                    request.getImageUrl()
+            );
+
+            Quest savedQuest = questRepository.save(parentQuest);
+
+            // 퀘스트 생성 로그 전송
+            questHistoryService.logQuest(savedQuest);
+
+            log.info("✅ 부모 퀘스트 생성 완료 - questId: {}, endDateTime: {}",
+                    savedQuest.getQuestId(), endDateTime);
+            return convertToDto(savedQuest);
+
+        } catch (Exception e) {
+            log.error("❌ 부모 퀘스트 생성 실패 - parentId: {}, error: {}", parentId, e.getMessage(), e);
+            throw new RuntimeException("퀘스트 생성에 실패했습니다: " + e.getMessage());
+        }
     }
+    /**
+     * 날짜 문자열(YYYY-MM-DD)을 받아서 해당 날짜의 23:59:59로 변환
+     * 예: "2024-09-01" → "2024-09-01T23:59:59"
+     */
+    private LocalDateTime convertDateToEndOfDay(String dateStr) {
+        try {
+            // "2024-09-01" 형식을 LocalDate로 파싱
+            LocalDate date = LocalDate.parse(dateStr);
 
+            // 해당 날짜의 23:59:59로 변환
+            LocalDateTime endOfDay = date.atTime(23, 59, 59);
+
+            log.debug("📅 날짜 변환 - 입력: {} → 출력: {}", dateStr, endOfDay);
+            return endOfDay;
+
+        } catch (Exception e) {
+            log.error("❌ 날짜 변환 실패 - 입력: {}, 에러: {}", dateStr, e.getMessage());
+            throw new IllegalArgumentException(
+                    "올바르지 않은 날짜 형식입니다. YYYY-MM-DD 형식을 사용해주세요. 예: 2024-09-01"
+            );
+        }
+    }
     @Transactional
     public void changeQuestState(QuestStateChangeRequest request) {
         Quest quest = questRepository.findById(request.getQuestId())
                 .orElseThrow(() -> new IllegalArgumentException("퀘스트를 찾을 수 없습니다."));
+
+        // 부모퀘스트인 경우 만료 체크
+        if (quest.getType() == Quest.QuestType.PARENT) {
+            LocalDateTime nowKST = LocalDateTime.now(ZoneId.of("Asia/Seoul"));
+            if (quest.getEndDate().isBefore(nowKST) &&
+                    quest.getState() != QuestState.COMPLETED &&
+                    quest.getState() != QuestState.EXPIRED) {
+
+                log.info("⏰ 상태 변경 시 만료된 퀘스트 발견: {}", quest.getName());
+                throw new IllegalArgumentException("만료된 퀘스트는 상태를 변경할 수 없습니다.");
+            }
+        }
 
         QuestState newState;
         try {
