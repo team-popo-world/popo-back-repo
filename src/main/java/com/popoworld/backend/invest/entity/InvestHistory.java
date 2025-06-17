@@ -7,6 +7,8 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.mapping.Field;
+import org.springframework.data.mongodb.core.mapping.FieldType;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -27,6 +29,7 @@ public class InvestHistory {
     private String chapterId; //챕터 구분
 
     @NotNull
+    @Field(targetType = FieldType.STRING)
     private UUID childId; //사용자 구분
 
     @NotNull
