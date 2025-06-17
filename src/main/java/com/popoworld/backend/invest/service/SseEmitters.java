@@ -25,6 +25,15 @@ public class SseEmitters {
         emitter.onTimeout(() -> emitters.remove(userId));
         emitter.onError((e) -> emitters.remove(userId));
 
+        try {
+            emitter.send(SseEmitter.event()
+                .name("connect")
+                .data("connected"));
+        } catch (Exception e) {
+            emitter.completeWithError(e);
+            emitters.remove(userId);
+        }
+
         return emitter;
     }
 
