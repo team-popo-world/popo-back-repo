@@ -1,5 +1,6 @@
 package com.popoworld.backend.invest.controller.parent;
 
+import com.popoworld.backend.global.token.JwtTokenProvider;
 import com.popoworld.backend.invest.dto.parent.dto.request.*;
 import com.popoworld.backend.invest.dto.parent.dto.response.CustomScenarioListDTO;
 import com.popoworld.backend.invest.dto.parent.dto.response.GetCustomScenarioListResponseDTO;
@@ -7,15 +8,15 @@ import com.popoworld.backend.invest.service.SseEmitters;
 import com.popoworld.backend.invest.service.parent.ParentInvestService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
-import com.popoworld.backend.global.token.JwtTokenProvider;
-import jakarta.servlet.http.HttpServletRequest;
 
+import java.nio.file.AccessDeniedException;
 import java.util.List;
 import java.util.UUID;
 
@@ -59,7 +60,7 @@ public class ChatbotController {
 
     @Operation(summary = "SSE 연결", description = "챗봇 업데이트 알림용 SSE 연결")
     @GetMapping("/sse")
-    public SseEmitter connect(HttpServletRequest request) {
+    public SseEmitter connect(HttpServletRequest request) throws AccessDeniedException {
         String token = request.getHeader("Authorization");
         if (token == null || !token.startsWith("Bearer ")) {
             throw new AccessDeniedException("Missing or invalid token");
