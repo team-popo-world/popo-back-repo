@@ -17,11 +17,11 @@ public class MarketController {
     private final MarketService marketService;
 
     // 조회 API
-    @GetMapping
-    public ResponseEntity<List<MarketItemDTO>> getMarketItems(@RequestParam("type") String type) {
-        List<MarketItemDTO> items = marketService.getItemsByType(type);
-        return ResponseEntity.ok(items);
-    }
+//    @GetMapping
+//    public ResponseEntity<List<MarketItemDTO>> getMarketItems(@RequestParam("type") String type) {
+//        List<MarketItemDTO> items = marketService.getItemsByType(type);
+//        return ResponseEntity.ok(items);
+//    }
 
     // 구매 API
     @PostMapping("/buy")
