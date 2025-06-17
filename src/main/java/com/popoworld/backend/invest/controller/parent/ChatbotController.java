@@ -57,7 +57,12 @@ public class ChatbotController {
     @Operation(summary = "SSE 연결", description = "챗봇 업데이트 알림용 SSE 연결")
     @GetMapping("/sse")
     public SseEmitter connect() {
-        UUID userId = getCurrentUserId();
+        String token = request.getHeader("Authorization");
+        if (token == null || !token.startsWith("Bearer ")) {
+            throw new AccessDeniedException("Missing or invalid token");
+        }
+
+        UUID userId = jwtService.extractUserId(token.substring(7));
         return sseEmitters.create(userId);
     }
 
