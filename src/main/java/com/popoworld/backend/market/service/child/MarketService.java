@@ -24,28 +24,28 @@ public class MarketService {
     private final ProductRepository productRepository;
     private final InventoryRepository inventoryRepository;
 
-    public List<MarketItemDTO> getItemsByType(String type) {
-        List<Product> products;
-        UUID childId = getCurrentUserId(); // 자녀 로그인 기준
-
-        switch (type) {
-            case "npc":
-                products = productRepository.findByUserIsNull();
-                break;
-            case "parent":
-                products = productRepository.findByUser(childId);
-                break;
-//            case "inventory":
+//    public List<MarketItemDTO> getItemsByType(String type) {
+//        List<Product> products;
+//        UUID childId = getCurrentUserId(); // 자녀 로그인 기준
 //
+//        switch (type) {
+//            case "npc":
+//                products = productRepository.findByUserIsNull();
 //                break;
-            default:
-                throw new IllegalArgumentException("잘못된 타입입니다.");
-        }
-
-        return products.stream()
-                .map(MarketItemDTO::fromEntity)
-                .toList();
-    }
+//            case "parent":
+//                products = productRepository.findByUser(childId);
+//                break;
+////            case "inventory":
+////
+////                break;
+//            default:
+//                throw new IllegalArgumentException("잘못된 타입입니다.");
+//        }
+//
+//        return products.stream()
+//                .map(MarketItemDTO::fromEntity)
+//                .toList();
+//    }
 
     public void purchaseItem() {
 
