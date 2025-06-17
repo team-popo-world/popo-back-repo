@@ -27,8 +27,8 @@ public class SseEmitters {
 
         try {
             emitter.send(SseEmitter.event()
-                    .name("connect")
-                    .data("connected"));
+                .name("connect")
+                .data("connected"));
         } catch (Exception e) {
             emitter.completeWithError(e);
             emitters.remove(userId);

@@ -257,4 +257,79 @@ public class QuestController {
             return ResponseEntity.internalServerError().build();
         }
     }
+
+    @GetMapping("/parent")
+    @Operation(
+            summary = "부모용 퀘스트 조회",
+            description = "부모가 특정 자식의 퀘스트 목록과 상태를 조회합니다."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "퀘스트 조회 성공",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = QuestListWithPointResponse.class),
+                            examples = {
+                                    @ExampleObject(
+                                            name = "부모가 자식 퀘스트 조회",
+                                            value = """
+                                        {
+                                            "currentPoint": 10100,
+                                            "quests": [
+                                                {
+                                                    "quest_id": "550e8400-e29b-41d4-a716-446655440003",
+                                                    "child_id": "2caf849e-69d7-4136-a7ce-f58d234f1941",
+                                                    "type": "parent",
+                                                    "name": "숙제 완료하기",
+                                                    "description": "이번 주 수학 숙제를 모두 완료해보자!",
+                                                    "state": "PENDING_APPROVAL",
+                                                    "end_date": "2025-06-20T23:59:59",
+                                                    "created": "2025-06-15T10:30:00",
+                                                    "isStatic": false,
+                                                    "reward": 300,
+                                                    "imageUrl": "https://example.com/homework.jpg"
+                                                }
+                                            ]
+                                        }
+                                        """
+                                    )
+                            }
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "잘못된 파라미터",
+                    content = @Content(mediaType = "application/json")
+            ),
+            @ApiResponse(
+                    responseCode = "401",
+                    description = "인증 실패",
+                    content = @Content(mediaType = "application/json")
+            )
+    })
+    public ResponseEntity<QuestListWithPointResponse> getQuestsForParent(
+            @Parameter(
+                    description = "조회할 자식의 ID",
+                    example = "2caf849e-69d7-4136-a7ce-f58d234f1941",
+                    required = true
+            )
+            @RequestParam UUID childId,
+
+            @Parameter(
+                    description = "퀘스트 타입 필터 (parent: 부모퀘스트, daily: 일일퀘스트)",
+                    example = "parent",
+                    schema = @Schema(allowableValues = {"parent", "daily"})
+            )
+            @RequestParam(required = false) String type
+    ) {
+        try {
+            QuestListWithPointResponse response = questService.getQuestsWithPoint(childId, type);
+            return ResponseEntity.ok(response);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().build();
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().build();
+        }
+    }
 }
