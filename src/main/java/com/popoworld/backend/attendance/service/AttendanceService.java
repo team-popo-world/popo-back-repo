@@ -31,7 +31,10 @@ public class AttendanceService {
     // 한국 시간대 설정
     private static final ZoneId KOREA_ZONE = ZoneId.of("Asia/Seoul");
 
-    // 일주일 완주 보상 포인트
+    // 매일 출석 보상 포인트
+    private static final int DAILY_ATTENDANCE_REWARD = 100;
+
+    // 일주일 완주 추가 보상 포인트
     private static final int WEEK_COMPLETION_REWARD = 500;
 
     // 한국 시간 기준 오늘 날짜 가져오기
@@ -65,8 +68,6 @@ public class AttendanceService {
         return result;
     }
 
-    // AttendanceService.java - checkAttendance 메서드 수정
-
     @Transactional
     public AttendanceCheckResponse checkAttendance(UUID childId, TodayAttendanceRequest request) {
         System.out.println("=== 디버그 정보 ===");
@@ -90,6 +91,9 @@ public class AttendanceService {
             throw new IllegalArgumentException("이미 " + request.getDayOfWeek() + "요일에 출석했습니다.");
         }
 
+        boolean weekCompleted = false;
+        int rewardPoints = 0;
+
         // 출석 기록 저장
         System.out.println("isAttended check: " + request.isAttended());
         if (request.isAttended()) {
@@ -97,10 +101,19 @@ public class AttendanceService {
             dailyCheckRepository.save(check);
             System.out.println("출석 기록 저장 완료!");
 
-            // 일주일 완주 확인 및 포인트 지급
+            // 매일 출석 보상 지급 (100원)
+            rewardPoints = DAILY_ATTENDANCE_REWARD;
+            addPointsToUser(childId, DAILY_ATTENDANCE_REWARD);
+            System.out.println("매일 출석 보상 " + DAILY_ATTENDANCE_REWARD + "원 지급!");
+
+            // 일주일 완주 확인 및 추가 보상 지급
             if (isWeekCompleted(childId)) {
+                weekCompleted = true;
+                rewardPoints += WEEK_COMPLETION_REWARD; // 추가 보상
+
                 addPointsToUser(childId, WEEK_COMPLETION_REWARD);
-                System.out.println("🎉 일주일 완주! 보상 " + WEEK_COMPLETION_REWARD + "원!");
+                System.out.println("🎉 일주일 완주! 추가 보상 " + WEEK_COMPLETION_REWARD + "원!");
+                System.out.println("총 받은 포인트: " + rewardPoints + "원");
             }
         } else {
             System.out.println("isAttended가 false여서 출석하지 않음");
@@ -109,9 +122,8 @@ public class AttendanceService {
         // 업데이트된 주간 출석 현황 조회
         List<WeekAttendanceResponse> weekAttendance = getAttendanceList(childId);
 
-        return new AttendanceCheckResponse(weekAttendance);
+        return new AttendanceCheckResponse(weekAttendance, weekCompleted, rewardPoints);
     }
-
     private LocalDate getThisWeekDate(KoreanDayOfWeek dayEnum) {
         LocalDate monday = getKoreaToday().with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
         return switch (dayEnum) {

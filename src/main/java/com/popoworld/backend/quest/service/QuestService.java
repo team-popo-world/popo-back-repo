@@ -2,7 +2,10 @@ package com.popoworld.backend.quest.service;
 
 import com.popoworld.backend.User.User;
 import com.popoworld.backend.User.repository.UserRepository;
-import com.popoworld.backend.quest.dto.*;
+import com.popoworld.backend.quest.dto.ParentQuestRequest;
+import com.popoworld.backend.quest.dto.QuestListWithPointResponse;
+import com.popoworld.backend.quest.dto.QuestResponse;
+import com.popoworld.backend.quest.dto.QuestStateChangeRequest;
 import com.popoworld.backend.quest.entity.Quest;
 import com.popoworld.backend.quest.enums.QuestState;
 import com.popoworld.backend.quest.repository.QuestRepository;
@@ -11,6 +14,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.ArrayList;
@@ -120,23 +124,58 @@ public class QuestService {
 
     @Transactional
     public QuestResponse createParentQuest(ParentQuestRequest request,UUID parentId) {
-        LocalDateTime endDateTime = LocalDateTime.parse(request.getEndDate());
-        Quest parentQuest = Quest.createParentQuest(
-                request.getChildId(),
-                request.getName(),
-                request.getDescription(),
-                request.getReward(),
-                endDateTime,
-                request.getImageUrl()
-        );
-        Quest savedQuest = questRepository.save(parentQuest);
+        log.info("🎯 부모 퀘스트 생성 - parentId: {}, childId: {}, name: {}, endDate: {}",
+                parentId, request.getChildId(), request.getName(), request.getEndDate());
 
-        //퀘스트 생성 로그 전송
-        questHistoryService.logQuest(savedQuest);
+        try {
+            // 🔧 날짜만 받아서 해당 날짜의 23:59:59로 변환
+            LocalDateTime endDateTime = convertDateToEndOfDay(request.getEndDate());
 
-        return convertToDto(savedQuest);
+            Quest parentQuest = Quest.createParentQuest(
+                    request.getChildId(),
+                    request.getName(),
+                    request.getDescription(),
+                    request.getReward(),
+                    endDateTime,
+                    request.getImageUrl()
+            );
+
+            Quest savedQuest = questRepository.save(parentQuest);
+
+            // 퀘스트 생성 로그 전송
+            questHistoryService.logQuest(savedQuest);
+
+            log.info("✅ 부모 퀘스트 생성 완료 - questId: {}, endDateTime: {}",
+                    savedQuest.getQuestId(), endDateTime);
+            return convertToDto(savedQuest);
+
+        } catch (Exception e) {
+            log.error("❌ 부모 퀘스트 생성 실패 - parentId: {}, error: {}", parentId, e.getMessage(), e);
+            throw new RuntimeException("퀘스트 생성에 실패했습니다: " + e.getMessage());
+        }
     }
+    /**
+     * 날짜 문자열(YYYY-MM-DD)을 받아서 해당 날짜의 23:59:59로 변환
+     * 예: "2024-09-01" → "2024-09-01T23:59:59"
+     */
+    private LocalDateTime convertDateToEndOfDay(String dateStr) {
+        try {
+            // "2024-09-01" 형식을 LocalDate로 파싱
+            LocalDate date = LocalDate.parse(dateStr);
 
+            // 해당 날짜의 23:59:59로 변환
+            LocalDateTime endOfDay = date.atTime(23, 59, 59);
+
+            log.debug("📅 날짜 변환 - 입력: {} → 출력: {}", dateStr, endOfDay);
+            return endOfDay;
+
+        } catch (Exception e) {
+            log.error("❌ 날짜 변환 실패 - 입력: {}, 에러: {}", dateStr, e.getMessage());
+            throw new IllegalArgumentException(
+                    "올바르지 않은 날짜 형식입니다. YYYY-MM-DD 형식을 사용해주세요. 예: 2024-09-01"
+            );
+        }
+    }
     @Transactional
     public void changeQuestState(QuestStateChangeRequest request) {
         Quest quest = questRepository.findById(request.getQuestId())
