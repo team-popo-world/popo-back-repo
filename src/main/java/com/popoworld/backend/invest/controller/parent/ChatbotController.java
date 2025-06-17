@@ -25,6 +25,7 @@ import static com.popoworld.backend.global.token.SecurityUtil.getCurrentUserId;
 @Tag(name="Chatbot", description = "시나리오 업데이트 챗봇 API")
 public class ChatbotController {
 
+    private final JwtTokenProvider jwtTokenProvider;
     private final ParentInvestService parentInvestService;
     private final SseEmitters sseEmitters;
 
@@ -56,13 +57,13 @@ public class ChatbotController {
 
     @Operation(summary = "SSE 연결", description = "챗봇 업데이트 알림용 SSE 연결")
     @GetMapping("/sse")
-    public SseEmitter connect() {
+    public SseEmitter connect(HttpServletRequest request) {
         String token = request.getHeader("Authorization");
         if (token == null || !token.startsWith("Bearer ")) {
             throw new AccessDeniedException("Missing or invalid token");
         }
 
-        UUID userId = jwtService.extractUserId(token.substring(7));
+        UUID userId = UUID.fromString(jwtTokenProvider.getUserIdFromToken(token.substring(7)));
         return sseEmitters.create(userId);
     }
 
