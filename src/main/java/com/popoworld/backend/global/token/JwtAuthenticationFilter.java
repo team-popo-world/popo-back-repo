@@ -25,6 +25,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                                     FilterChain filterChain)
             throws ServletException, IOException {
 
+        if (request.getRequestURI().equals("/auth/token/refresh")) {
+            filterChain.doFilter(request, response);
+            return;
+        }
+
         String token = parseJwt(request);
 
         if (token != null && jwtTokenProvider.validateToken(token)) {
@@ -43,6 +48,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
             SecurityContextHolder.getContext().setAuthentication(authentication);
         }
+
 
         filterChain.doFilter(request, response);
     }
