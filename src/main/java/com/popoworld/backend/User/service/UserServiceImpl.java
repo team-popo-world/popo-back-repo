@@ -127,8 +127,8 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public RefreshTokenResponseDTO refreshToken(RefreshTokenRequestDTO requestDto) {
-        String requestToken = requestDto.getRefreshToken();
+    public RefreshTokenResponseDTO refreshToken(String requestDto) {
+        String requestToken = requestDto;
 
         // 유효한 토큰인지 확인
         if (!jwtTokenProvider.validateToken(requestToken)) {
