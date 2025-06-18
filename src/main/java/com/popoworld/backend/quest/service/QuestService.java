@@ -7,6 +7,7 @@ import com.popoworld.backend.quest.dto.QuestListWithPointResponse;
 import com.popoworld.backend.quest.dto.QuestResponse;
 import com.popoworld.backend.quest.dto.QuestStateChangeRequest;
 import com.popoworld.backend.quest.entity.Quest;
+import com.popoworld.backend.quest.enums.QuestLabel;
 import com.popoworld.backend.quest.enums.QuestState;
 import com.popoworld.backend.quest.repository.QuestRepository;
 import lombok.RequiredArgsConstructor;
@@ -114,11 +115,11 @@ public class QuestService {
 
     private List<Quest> createDailyQuestsForChild(UUID childId) {
         List<Quest> dailyQuests = new ArrayList<>();
-        dailyQuests.add(Quest.createDailyQuest(childId, "양치하기", "밥 먹었으면 포포와 양치하자!", 100));
-        dailyQuests.add(Quest.createDailyQuest(childId, "장난감 정리하기", "가지고 온 장난감은 스스로 치워볼까?", 100));
-        dailyQuests.add(Quest.createDailyQuest(childId, "이불 개기", "일어나면 이불을 예쁘게 개자!", 100));
-        dailyQuests.add(Quest.createDailyQuest(childId, "식탁 정리 도와주기", "먹고 난 그릇, 포포랑 정리해보자!", 100));
-        dailyQuests.add(Quest.createDailyQuest(childId, "하루 이야기 나누기", "오늘 어땠는지 부모님과 얘기해보자!", 100));
+        dailyQuests.add(Quest.createDailyQuest(childId, "양치하기", "밥 먹었으면 포포와 양치하자!", 100, QuestLabel.HABIT));
+        dailyQuests.add(Quest.createDailyQuest(childId, "장난감 정리하기", "가지고 온 장난감은 스스로 치워볼까?", 100,QuestLabel.HOUSEHOLD));
+        dailyQuests.add(Quest.createDailyQuest(childId, "이불 개기", "일어나면 이불을 예쁘게 개자!", 100,QuestLabel.HABIT));
+        dailyQuests.add(Quest.createDailyQuest(childId, "식탁 정리 도와주기", "먹고 난 그릇, 포포랑 정리해보자!", 100,QuestLabel.HOUSEHOLD));
+        dailyQuests.add(Quest.createDailyQuest(childId, "하루 이야기 나누기", "오늘 어땠는지 부모님과 얘기해보자!", 100,QuestLabel.HABIT));
         return dailyQuests;
     }
 
@@ -137,7 +138,8 @@ public class QuestService {
                     request.getDescription(),
                     request.getReward(),
                     endDateTime,
-                    request.getImageUrl()
+                    request.getImageUrl(),
+                    request.getLabel()
             );
 
             Quest savedQuest = questRepository.save(parentQuest);
@@ -261,6 +263,7 @@ public class QuestService {
                 .isStatic(quest.isStatic())
                 .reward(quest.getReward())
                 .imageUrl(quest.getImageUrl())
+                .label(quest.getLabel())
                 .build();
     }
 }

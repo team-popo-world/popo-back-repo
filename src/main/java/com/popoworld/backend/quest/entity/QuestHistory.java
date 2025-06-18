@@ -1,5 +1,6 @@
 package com.popoworld.backend.quest.entity;
 
+import com.popoworld.backend.quest.enums.QuestLabel;
 import com.popoworld.backend.quest.enums.QuestState;
 import jakarta.persistence.Id;
 import lombok.AllArgsConstructor;
@@ -25,4 +26,5 @@ public class QuestHistory {
     private QuestState currentState; //현재 상태
     private Integer rewardPoint;
     private LocalDateTime actionTime; //액션 발생 시간
+    private QuestLabel label;
 }

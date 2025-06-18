@@ -3,6 +3,7 @@ package com.popoworld.backend.quest.scheduler;
 import com.popoworld.backend.User.User;
 import com.popoworld.backend.User.repository.UserRepository;
 import com.popoworld.backend.quest.entity.Quest;
+import com.popoworld.backend.quest.enums.QuestLabel;
 import com.popoworld.backend.quest.enums.QuestState;
 import com.popoworld.backend.quest.repository.QuestRepository;
 import lombok.RequiredArgsConstructor;
@@ -105,12 +106,12 @@ public class DailyQuestScheduler {
     private List<Quest> createDailyQuestsForChild(UUID childId) {
         List<Quest> dailyQuests = new ArrayList<>();
 
-        // 🎯 정적 팩토리 메서드 사용
-        dailyQuests.add(Quest.createDailyQuest(childId, "양치하기", "밥 먹었으면 포포와 양치하자!", 100));
-        dailyQuests.add(Quest.createDailyQuest(childId, "장난감 정리하기", "가지고 온 장난감은 스스로 치워볼까?", 100));
-        dailyQuests.add(Quest.createDailyQuest(childId, "이불 개기", "일어나면 이불을 예쁘게 개자!", 100));
-        dailyQuests.add(Quest.createDailyQuest(childId, "식탁 정리 도와주기", "먹고 난 그릇, 포포랑 정리해보자!", 100));
-        dailyQuests.add(Quest.createDailyQuest(childId, "하루 이야기 나누기", "오늘 어땠는지 부모님과 얘기해보자!", 100));
+        // 🔥 일일 퀘스트에 적절한 라벨 추가
+        dailyQuests.add(Quest.createDailyQuest(childId, "양치하기", "밥 먹었으면 포포와 양치하자!", 100, QuestLabel.HABIT));
+        dailyQuests.add(Quest.createDailyQuest(childId, "장난감 정리하기", "가지고 온 장난감은 스스로 치워볼까?", 100, QuestLabel.HOUSEHOLD));
+        dailyQuests.add(Quest.createDailyQuest(childId, "이불 개기", "일어나면 이불을 예쁘게 개자!", 100, QuestLabel.HABIT));
+        dailyQuests.add(Quest.createDailyQuest(childId, "식탁 정리 도와주기", "먹고 난 그릇, 포포랑 정리해보자!", 100, QuestLabel.HOUSEHOLD));
+        dailyQuests.add(Quest.createDailyQuest(childId, "하루 이야기 나누기", "오늘 어땠는지 부모님과 얘기해보자!", 100, QuestLabel.HABIT));
 
         return dailyQuests;
     }
