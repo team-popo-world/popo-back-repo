@@ -30,7 +30,7 @@ public class InvestHistory {
 
     @NotNull
     @Field(targetType = FieldType.STRING)
-    private UUID childId; //사용자 구분
+    private UUID userId; //사용자 구분
 
     @NotNull
     private Integer turn; //턴 구분
