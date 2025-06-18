@@ -1,10 +1,8 @@
 package com.popoworld.backend.market.controller;
 
-import com.popoworld.backend.market.dto.child.InventoryItemResponse;
-import com.popoworld.backend.market.dto.child.MarketItemResponse;
-import com.popoworld.backend.market.dto.child.PurchaseItemRequest;
-import com.popoworld.backend.market.dto.child.PurchaseItemResponse;
+import com.popoworld.backend.market.dto.child.*;
 import com.popoworld.backend.market.dto.parent.CreateProductRequest;
+import com.popoworld.backend.market.dto.parent.UsageHistoryResponse;
 import com.popoworld.backend.market.service.child.InventoryService;
 import com.popoworld.backend.market.service.child.MarketService;
 import com.popoworld.backend.market.service.parent.MarketParentService;
@@ -88,6 +86,46 @@ public class MarketController {
         List<InventoryItemResponse> inventory = inventoryService.getUserInventory(userId);
         return ResponseEntity.ok(inventory);
     }
-    // 사용 API
 
+    // 사용 API -자녀용
+    @PostMapping("/inventory/usage")
+    @Operation(
+            summary = "인벤토리 상품 사용",
+            description = "부모가 등록한 상품을 인벤토리에서 사용합니다. 사용 시 수량이 차감되고 부모에게 알림이 갑니다."
+    )
+    public ResponseEntity<UseItemResponse>useItem(@RequestBody UseItemRequest request){
+        UUID childId = getCurrentUserId();
+        UseItemResponse response = inventoryService.useItem(request,childId);
+
+        return ResponseEntity.ok(response);
+    }
+
+    // 사용 내역 조회 - 부모용
+    @GetMapping("/parent/usage-history")
+    @Operation(
+            summary = "자녀 상품 사용 내역 조회",
+            description = "부모가 등록한 상품을 자녀가 사용한 내역을 시간순으로 조회합니다. childId를 지정하면 특정 자녀만, 미지정시 모든 자녀의 내역을 조회합니다."
+    )
+    @Parameter(name = "childId", description = "조회할 자녀 ID (선택사항)", required = false)
+    public ResponseEntity<List<UsageHistoryResponse>> getUsageHistory(
+            @RequestParam(value = "childId", required = false) UUID childId) {
+        UUID parentId = getCurrentUserId();
+
+        List<UsageHistoryResponse> history = marketParentService.getUsageHistory(parentId, childId);
+
+        return ResponseEntity.ok(history);
+    }
+
+    @GetMapping("/parent/products")
+    @Operation(
+            summary = "내가 등록한 상품 목록",
+            description = "특정 자녀용 또는 모든 자녀용 상품을 조회합니다. childId를 지정하면 해당 자녀용만, 미지정시 모든 자녀용 상품을 조회합니다."
+    )
+    @Parameter(name = "childId", description = "조회할 자녀 ID (선택사항)", required = false)
+    public ResponseEntity<List<MarketItemResponse>> getMyProducts(
+            @RequestParam(value = "childId", required = false) UUID childId) {
+        UUID parentId = getCurrentUserId();
+        List<MarketItemResponse> products = marketParentService.getMyProducts(parentId, childId);
+        return ResponseEntity.ok(products);
+    }
 }
