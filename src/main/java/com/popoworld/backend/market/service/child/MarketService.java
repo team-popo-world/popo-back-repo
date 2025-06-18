@@ -10,8 +10,9 @@ import com.popoworld.backend.market.entity.Product;
 import com.popoworld.backend.market.repository.InventoryRepository;
 import com.popoworld.backend.market.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.transaction.annotation.Transactional;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
@@ -19,6 +20,7 @@ import java.util.UUID;
 
 import static com.popoworld.backend.global.token.SecurityUtil.getCurrentUserId;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class MarketService {
@@ -86,21 +88,35 @@ public class MarketService {
 
     }
 
-    //인벤토리에 아이템 추가
-    private void addToInventory(User user, Product product, int amount){
-        //기존 인벤토리 아이템 확인
-        Optional<Inventory>existingInventory = inventoryRepository.findByUser_UserIdAndProduct_ProductId(user.getUserId(),product.getProductId());
+    // 인벤토리에 아이템 추가 (JPA 버전)
+    private void addToInventory(User user, Product product, int amount) {
+        log.info("=== 인벤토리 추가 시작 ===");
+        log.info("사용자 ID: {}, 상품 ID: {}, 수량: {}", user.getUserId(), product.getProductId(), amount);
 
-        if(existingInventory.isPresent()){
-            //기존 아이템 있으면 수량증가
-            Inventory inventory= existingInventory.get();
-            inventory.setStock(inventory.getStock()+amount);
-            inventoryRepository.save(inventory);
-        }else{
-            //새로운 인벤토리 아이템 생성
-            Inventory newInventory = new Inventory(null,user,product,amount);
-            inventoryRepository.save(newInventory);
+        try {
+            // 기존 인벤토리 찾기
+            Optional<Inventory> existingInventory = inventoryRepository
+                    .findByUser_UserIdAndProduct_ProductId(user.getUserId(), product.getProductId());
+
+            if (existingInventory.isPresent()) {
+                // 있으면 수량 추가
+                Inventory inventory = existingInventory.get();
+                inventory.setStock(inventory.getStock() + amount);
+                inventoryRepository.save(inventory);
+                log.info("✅ 기존 인벤토리 업데이트 완료");
+            } else {
+                // 없으면 새로 생성
+                Inventory newInventory = Inventory.builder()
+                        .user(user)
+                        .product(product)
+                        .stock(amount)
+                        .build();
+                inventoryRepository.save(newInventory);
+                log.info("✅ 새 인벤토리 생성 완료");
+            }
+        } catch (Exception e) {
+            log.error("❌ 인벤토리 처리 실패: {}", e.getMessage());
+            throw new RuntimeException("인벤토리 처리 중 오류가 발생했습니다. 다시 시도해주세요.");
         }
     }
-
 }
