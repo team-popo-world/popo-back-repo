@@ -1,7 +1,9 @@
 package com.popoworld.backend.global.config;
 
+import com.popoworld.backend.global.token.JwtAuthenticationEntryPoint;
 import com.popoworld.backend.global.token.JwtAuthenticationFilter;
 import com.popoworld.backend.global.token.JwtTokenProvider;
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -22,13 +24,20 @@ import java.util.List;
 
 @Configuration
 @EnableWebSecurity
+@RequiredArgsConstructor
 public class WebSecurityConfig {
+
+    private final JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
+
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http, JwtTokenProvider jwtTokenProvider) throws Exception {
         return http
                 .httpBasic(AbstractHttpConfigurer::disable)
                 .csrf(AbstractHttpConfigurer::disable)
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+                .exceptionHandling(exception ->
+                        exception.authenticationEntryPoint(jwtAuthenticationEntryPoint) // ✅ 추가
+                )
                 .authorizeHttpRequests(auth ->
                         auth
                                 // Swagger 접근 가능
@@ -42,6 +51,8 @@ public class WebSecurityConfig {
                                         "/auth/signup",
                                         "/auth/login").permitAll()
                                 .requestMatchers("/api/chatbot/sse").permitAll()
+                                .requestMatchers("/api/scenario/default").permitAll()
+                                .requestMatchers("/auth/token/refresh").permitAll()
                                 .anyRequest().authenticated()
                 )
                 .addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider), UsernamePasswordAuthenticationFilter.class)
