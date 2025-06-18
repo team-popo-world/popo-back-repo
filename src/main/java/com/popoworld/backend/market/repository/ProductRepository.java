@@ -9,7 +9,7 @@ import java.util.UUID;
 
 @Repository
 public interface ProductRepository extends JpaRepository<Product, UUID> {
-    List<Product> findByUser(UUID childId); //부모가 등록한 상품 찾기
+    List<Product> findByUserUserId(UUID childId); //부모가 등록한 상품 찾기
 
     List<Product> findByUserIsNull(); //먹이 상품 리스트
 }

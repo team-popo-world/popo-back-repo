@@ -20,7 +20,11 @@ public class Inventory {
     @GeneratedValue
     private UUID inventoryId;
 
-    @OneToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id")
+    private User user; //한 사용자당 하나의 인벤토리
+
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "product_id")
     private Product product;
 

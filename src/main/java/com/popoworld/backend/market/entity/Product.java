@@ -5,6 +5,7 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.util.UUID;
 
@@ -12,6 +13,7 @@ import java.util.UUID;
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor
+@Setter
 @Table(name = "products")
 public class Product {
     @Id
@@ -29,6 +31,7 @@ public class Product {
 
     @Enumerated(EnumType.STRING)
     private ProductStatus state; //REGISTERED, PURCHASE
+
     private int exp; //상품 경험치 (NPC 상품만 경험치 있음)
 
 }
