@@ -1,5 +1,6 @@
 package com.popoworld.backend.market.dto.parent;
 
+import com.popoworld.backend.market.entity.ProductLabel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -15,5 +16,5 @@ public class CreateProductRequest {
     private int productPrice;
     private int productStock;
     private String productImage;
-
+    private ProductLabel label;
 }

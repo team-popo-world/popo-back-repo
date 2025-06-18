@@ -1,6 +1,7 @@
 package com.popoworld.backend.quest.entity;
 
 
+import com.popoworld.backend.quest.enums.QuestLabel;
 import com.popoworld.backend.quest.enums.QuestState;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
@@ -43,6 +44,10 @@ public class Quest {
 
     private String imageUrl;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "quest_label")
+    private QuestLabel label;
+
     public enum QuestType{
         PARENT, DAILY
     }
@@ -52,7 +57,7 @@ public class Quest {
         this.state=newState;
     }
     //일일 퀘스트 생성용 정적 메서드
-    public static Quest createDailyQuest(UUID childId, String name, String description, int reward) {
+    public static Quest createDailyQuest(UUID childId, String name, String description, int reward,QuestLabel label) {
         Quest quest = new Quest();
         quest.questId = UUID.randomUUID();
         quest.childId = childId;
@@ -65,12 +70,13 @@ public class Quest {
         quest.isStatic = false;
         quest.reward = reward;
         quest.imageUrl = null;
+        quest.label = label;
         return quest;
     }
 
     // 부모퀘스트 생성용 정적 메서드
     public static Quest createParentQuest(UUID childId, String name, String description,
-                                          int reward, LocalDateTime endDate, String imageUrl) {
+                                          int reward, LocalDateTime endDate, String imageUrl,QuestLabel label) {
         Quest quest = new Quest();
         quest.questId = UUID.randomUUID();
         quest.childId = childId;
@@ -83,6 +89,7 @@ public class Quest {
         quest.isStatic = false;
         quest.reward = reward;
         quest.imageUrl = imageUrl;
+        quest.label=label;
         return quest;
     }
 }

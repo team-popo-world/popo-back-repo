@@ -2,6 +2,7 @@ package com.popoworld.backend.quest.dto;
 
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.popoworld.backend.quest.enums.QuestLabel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -42,5 +43,6 @@ public class QuestResponse {
     @JsonProperty("imageUrl")
     private String imageUrl;
 
-
+    @JsonProperty("label")
+    private QuestLabel label;
 }

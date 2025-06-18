@@ -31,7 +31,8 @@ public class QuestHistoryService {
                     quest.getDescription(),
                     quest.getState(),
                     quest.getReward(),
-                    LocalDateTime.now(ZoneId.of("Asia/Seoul"))
+                    LocalDateTime.now(ZoneId.of("Asia/Seoul")),
+                    quest.getLabel()
             );
 
             ObjectMapper mapper = new ObjectMapper();

@@ -1,6 +1,7 @@
 package com.popoworld.backend.market.dto.child;
 
 import com.popoworld.backend.market.entity.Product;
+import com.popoworld.backend.market.entity.ProductLabel;
 import lombok.Data;
 
 import java.util.UUID;
@@ -13,6 +14,7 @@ public class MarketItemResponse {
     private int quantity; // 무한일 경우 -1 또는 Integer.MAX_VALUE로 처리
     private String type;
     private String imageUrl;
+    private ProductLabel label;
 
     public static MarketItemResponse fromEntity(Product product) {
         MarketItemResponse dto = new MarketItemResponse();
@@ -21,8 +23,8 @@ public class MarketItemResponse {
         dto.price = product.getProductPrice();
         dto.quantity = product.getProductStock();
         dto.imageUrl = product.getProductImage();
-
         dto.type=(product.getUser()==null) ? "npc":"parent";
+        dto.label = product.getLabel();
         return dto;
     }
 }
