@@ -39,7 +39,8 @@ public class MarketParentService {
                 request.getProductStock(),
                 request.getProductImage(),
                 ProductStatus.REGISTERED,
-                0
+                0,
+                request.getLabel()
         );
         Product savedProduct = productRepository.save(product);
         return MarketItemResponse.fromEntity(savedProduct);

@@ -9,6 +9,7 @@ import com.popoworld.backend.market.entity.Inventory;
 import com.popoworld.backend.market.entity.Product;
 import com.popoworld.backend.market.repository.InventoryRepository;
 import com.popoworld.backend.market.repository.ProductRepository;
+import com.popoworld.backend.market.service.PurchaseHistoryService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -24,7 +25,7 @@ import static com.popoworld.backend.global.token.SecurityUtil.getCurrentUserId;
 @Service
 @RequiredArgsConstructor
 public class MarketService {
-
+    private final PurchaseHistoryService purchaseHistoryService;
     private final ProductRepository productRepository;
     private final InventoryRepository inventoryRepository;
     private final UserRepository userRepository;
@@ -84,6 +85,7 @@ public class MarketService {
         //8. 인벤토리에 추가
         addToInventory(user,product,request.getAmount());
 
+        purchaseHistoryService.logPurchase(product, request.getAmount(), childId);
         return new PurchaseItemResponse(user.getPoint(),request.getAmount(),totalPrice);
 
     }

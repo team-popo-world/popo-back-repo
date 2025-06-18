@@ -34,4 +34,7 @@ public class Product {
 
     private int exp; //상품 경험치 (NPC 상품만 경험치 있음)
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "product_label")
+    private ProductLabel label;
 }
