@@ -12,9 +12,11 @@ import com.popoworld.backend.quest.repository.QuestRepository;
 import com.popoworld.backend.quest.service.QuestService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
@@ -25,10 +27,11 @@ import java.util.UUID;
 public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
-    private final RefreshTokenRepository refreshTokenRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtTokenProvider jwtTokenProvider;
     private final QuestService questService;
+    private final StringRedisTemplate redisTemplate;
+    private final Duration TTL = Duration.ofDays(7); // 7일 TTL
 
     // 공통로직
     @Override
@@ -89,11 +92,7 @@ public class UserServiceImpl implements UserService {
         String refreshToken = jwtTokenProvider.generateRefreshToken(user.getEmail());
 
         // RefreshToken 저장
-        RefreshToken tokenEntity = new RefreshToken();
-        tokenEntity.setToken(refreshToken);
-        tokenEntity.setUserEmail(user.getEmail());
-        tokenEntity.setExpiresAt(Instant.now().plusSeconds(60 * 60 * 24 * 7));
-        refreshTokenRepository.save(tokenEntity);
+        redisTemplate.opsForValue().set(user.getEmail(), refreshToken, TTL);
 
         // 로그인 응답
         if ("Parent".equalsIgnoreCase(user.getRole())) {
@@ -124,7 +123,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public void logout(LogoutRequestDTO requestDto) {
         // refreshToken 삭제
-        refreshTokenRepository.deleteByToken(requestDto.getRefreshToken());
+        redisTemplate.delete(requestDto.getUserEmail());
     }
 
     @Override
@@ -136,47 +135,28 @@ public class UserServiceImpl implements UserService {
             throw new IllegalArgumentException("유효하지 않은 리프레시 토큰입니다.");
         }
 
-        // DB에서 토큰 존재 확인
-        RefreshToken savedToken = refreshTokenRepository.findByToken(requestToken)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 리프레시 토큰입니다."));
-
         // 이메일로 사용자 조회
-        String userEmail = savedToken.getUserEmail();
+        String userEmail = jwtTokenProvider.getEmailFromToken(requestToken);
+
+        // DB에서 토큰 존재 확인
+        String savedToken = redisTemplate.opsForValue().get(userEmail);
+
+        if (savedToken == null || !savedToken.equals(requestToken)) {
+            throw new IllegalArgumentException("리프레시 토큰이 일치하지 않거나 만료되었습니다.");
+        }
+
+        // 사용자 정보 보회
         User user = userRepository.findByEmail(userEmail)
                 .orElseThrow(() -> new IllegalArgumentException("해당 이메일의 사용자를 찾을 수 없습니다."));
 
-        // 새로운 토큰 생성
+        // 새로운 토큰 생성 및 갱신
         String newAccessToken = jwtTokenProvider.generateAccessToken(user);
         String newRefreshToken = jwtTokenProvider.generateRefreshToken(userEmail);
-
-        // 기존 토큰 갱신
-        savedToken.setToken(newRefreshToken);
-        refreshTokenRepository.save(savedToken);
+        redisTemplate.opsForValue().set(userEmail, newRefreshToken, TTL);
 
         return new RefreshTokenResponseDTO(newAccessToken, newRefreshToken);
     }
 
 
-
-
-
-
-
-
-
-    // 부모
-
-
-
-
-
-
-
-
-
-
-
-
-    // 자식
 
 }
