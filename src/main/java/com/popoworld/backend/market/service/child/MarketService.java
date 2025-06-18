@@ -30,16 +30,16 @@ public class MarketService {
     private final UserRepository userRepository;
     public List<MarketItemResponse> getItemsByType(String type) {
         List<Product> products;
-        UUID childId = getCurrentUserId(); // 자녀 로그인 기준
+        UUID childId = getCurrentUserId();
 
         switch (type) {
             case "npc":
                 products = productRepository.findByUserIsNull();
                 break;
             case "parent":
-                products = productRepository.findByUserUserId(childId);
+                // 🔥 메서드명 변경
+                products = productRepository.findByTargetChildId(childId);
                 break;
-
             default:
                 throw new IllegalArgumentException("잘못된 타입입니다.");
         }
