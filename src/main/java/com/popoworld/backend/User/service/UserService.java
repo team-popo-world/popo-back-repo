@@ -9,5 +9,5 @@ public interface UserService {
     void signup(SignupRequestDTO requestDto);
     LoginResponseDTO login(LoginRequestDTO requestDto);
     void logout(LogoutRequestDTO requestDto);
-    RefreshTokenResponseDTO refreshToken(RefreshTokenRequestDTO requestDto);
+    RefreshTokenResponseDTO refreshToken(String requestDto);
 }
