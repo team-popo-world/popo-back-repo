@@ -13,6 +13,7 @@ public class InventoryItemResponse {
     private int stock; //보유 수량
     private String type; //"npc" or "parent"
     private int exp;
+    private int price;
 
     public static InventoryItemResponse fromEntity(Inventory inventory){
         InventoryItemResponse dto = new InventoryItemResponse();
@@ -20,6 +21,8 @@ public class InventoryItemResponse {
         dto.name = inventory.getProduct().getProductName();
         dto.imageUrl=inventory.getProduct().getProductImage();
         dto.stock=inventory.getStock();
+        dto.price = inventory.getProduct().getProductPrice();
+
 
         //타입에 따른 설정
         // 타입에 따른 설정

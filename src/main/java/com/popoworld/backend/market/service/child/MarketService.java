@@ -7,6 +7,7 @@ import com.popoworld.backend.market.dto.child.PurchaseItemRequest;
 import com.popoworld.backend.market.dto.child.PurchaseItemResponse;
 import com.popoworld.backend.market.entity.Inventory;
 import com.popoworld.backend.market.entity.Product;
+import com.popoworld.backend.market.entity.ProductStatus;
 import com.popoworld.backend.market.repository.InventoryRepository;
 import com.popoworld.backend.market.repository.ProductRepository;
 import com.popoworld.backend.market.service.PurchaseHistoryService;
@@ -39,7 +40,11 @@ public class MarketService {
                 break;
             case "parent":
                 // 🔥 메서드명 변경
-                products = productRepository.findByTargetChildId(childId);
+                products = productRepository.findByTargetChildId(childId)
+                        .stream()
+                 .filter(p -> p.getState() == ProductStatus.REGISTERED)
+                        .filter(p -> p.getProductStock() > 0)
+                        .toList();
                 break;
             default:
                 throw new IllegalArgumentException("잘못된 타입입니다.");
