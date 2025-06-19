@@ -12,6 +12,7 @@ import com.popoworld.backend.market.repository.ProductRepository;
 import com.popoworld.backend.market.repository.ProductUsageRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.UUID;
@@ -68,6 +69,39 @@ public class MarketParentService {
         return usageList.stream()
                 .map(UsageHistoryResponse::fromEntity)
                 .toList();
+    }
+
+    // MarketParentService.java - deleteParentProduct 메서드 완전 교체
+
+    @Transactional
+    public void deleteParentProduct(UUID productId, UUID childId, UUID parentId) {
+
+        // 1. 상품 조회
+        Product product = productRepository.findById(productId)
+                .orElseThrow(() -> new IllegalArgumentException("상품을 찾을 수 없습니다."));
+
+        // 2. NPC 상품 삭제 방지
+        if (product.getUser() == null) {
+            throw new IllegalArgumentException("NPC 상품은 삭제할 수 없습니다.");
+        }
+
+        // 3. 자녀 확인: 요청된 자녀가 실제로 이 부모의 자녀인지 확인
+        User child = userRepository.findById(childId)
+                .orElseThrow(() -> new IllegalArgumentException("자녀를 찾을 수 없습니다."));
+
+        if (!child.getParent().getUserId().equals(parentId)) {
+            throw new IllegalArgumentException("본인의 자녀가 아닙니다.");
+        }
+
+        // 4. 상품-자녀 매칭 확인: 이 상품이 정말 해당 자녀용으로 등록된 상품인지 확인
+        if (!product.getUser().getUserId().equals(childId)) {
+            throw new IllegalArgumentException("해당 자녀용으로 등록된 상품이 아닙니다.");
+        }
+
+        // 🔥 5. 상태를 DISCONTINUED로 변경
+        product.setState(ProductStatus.DISCONTINUED);
+        productRepository.save(product);
+
     }
     }
 

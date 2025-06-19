@@ -17,6 +17,7 @@ public class UsageHistoryResponse { //아이 사용 내역
     private String productName; //상품 이름
     private int usedAmount; //사용한 수량
     private LocalDateTime usedAt; //사용 시간
+    private int price;
 
     public static UsageHistoryResponse fromEntity(ProductUsage usage) {
         UsageHistoryResponse dto = new UsageHistoryResponse();
@@ -25,6 +26,7 @@ public class UsageHistoryResponse { //아이 사용 내역
         dto.productName = usage.getProduct().getProductName();
         dto.usedAmount = usage.getUsedAmount();
         dto.usedAt = usage.getUsedAt();
+        dto.price = usage.getProduct().getProductPrice();
         return dto;
     }
 

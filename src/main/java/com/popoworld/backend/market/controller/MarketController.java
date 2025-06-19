@@ -359,4 +359,67 @@ public class MarketController {
         List<MarketItemResponse> products = marketParentService.getMyProducts(parentId, childId);
         return ResponseEntity.ok(products);
     }
+
+    // MarketController.java에 추가할 메서드
+
+    @DeleteMapping("/parent/products/{productId}")
+    @Operation(
+            summary = "부모 상품 삭제 (단종 처리)",
+            description = """
+                **부모가 특정 자녀를 위해 등록한 상품을 삭제(단종)합니다.**
+                
+                🔄 **처리 과정:**
+                1. 해당 자녀용으로 등록된 상품인지 확인
+                2. 상품 상태를 'DISCONTINUED'로 변경
+                3. 상점에서는 더 이상 보이지 않음 (구매 불가)
+                4. 자녀 인벤토리의 기존 아이템은 그대로 유지
+                
+                ⚠️ **주의사항:**
+                • 본인이 등록한 상품만 삭제 가능
+                • 해당 자녀용으로 등록된 상품만 삭제 가능
+                • NPC 상품은 삭제 불가
+                
+                💡 **예시:**
+                • 첫째 아이용 "레고 세트" 삭제
+                • 둘째 아이용 "닌텐도 스위치" 삭제
+                """
+    )
+    @Parameter(
+            name = "productId",
+            description = "삭제할 상품의 UUID",
+            required = true,
+            example = "550e8400-e29b-41d4-a716-446655440000"
+    )
+    @Parameter(
+            name = "childId",
+            description = """
+                삭제할 상품이 등록된 자녀의 UUID
+                
+                • **필수 파라미터**: 어떤 자녀의 상품을 삭제할지 지정
+                • **권한 확인**: 해당 자녀가 요청자의 자녀인지 검증
+                • **상품 매칭**: 해당 자녀용으로 등록된 상품인지 확인
+                """,
+            required = true,
+            example = "123e4567-e89b-12d3-a456-426614174000"
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "✅ 상품 삭제(단종) 성공"),
+            @ApiResponse(responseCode = "401", description = "❌ 인증 실패 (부모 권한 필요)"),
+            @ApiResponse(responseCode = "403", description = "❌ 본인의 자녀가 아니거나 해당 자녀용 상품이 아님"),
+            @ApiResponse(responseCode = "404", description = "❌ 상품 또는 자녀를 찾을 수 없음"),
+            @ApiResponse(responseCode = "400", description = "❌ NPC 상품은 삭제 불가 또는 잘못된 요청")
+    })
+    public ResponseEntity<String> deleteParentProduct(
+            @PathVariable UUID productId,
+            @RequestParam UUID childId) {
+
+        UUID parentId = getCurrentUserId();
+        log.info("상품 삭제 요청: 상품ID={}, 자녀ID={}, 부모ID={}",
+                productId, childId, parentId);
+
+        marketParentService.deleteParentProduct(productId, childId, parentId);
+
+        return ResponseEntity.ok("상품이 성공적으로 삭제되었습니다. (기존 보유 아이템은 유지됩니다)");
+    }
+
 }
