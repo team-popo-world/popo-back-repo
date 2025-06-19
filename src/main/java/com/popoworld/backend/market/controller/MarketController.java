@@ -1,8 +1,9 @@
+// MarketController.java
 package com.popoworld.backend.market.controller;
 
 import com.popoworld.backend.market.dto.child.*;
+import com.popoworld.backend.market.dto.parent.ApprovalItemResponse;
 import com.popoworld.backend.market.dto.parent.CreateProductRequest;
-import com.popoworld.backend.market.dto.parent.UsageHistoryResponse;
 import com.popoworld.backend.market.service.child.InventoryService;
 import com.popoworld.backend.market.service.child.MarketService;
 import com.popoworld.backend.market.service.parent.MarketParentService;
@@ -10,7 +11,6 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
-import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -29,38 +29,32 @@ import static com.popoworld.backend.global.token.SecurityUtil.getCurrentUserId;
 @RestController
 @RequestMapping("/api/store")
 @Slf4j
-@Tag(name = "시장 API", description = "포포월드 마켓플레이스 관련 API - NPC 상점과 부모 상점 관리")
+// 👇 클래스 레벨 태그 제거
 public class MarketController {
 
     private final MarketService marketService;
     private final MarketParentService marketParentService;
     private final InventoryService inventoryService;
 
-    // 상품 조회 API
+    // ===== 공통 API =====
+
     @GetMapping
+    @Tag(name = "시장 자녀용 API") // 👈 수정됨
     @Operation(
             summary = "상점 아이템 조회",
             description = """
-                    **상점 타입에 따라 아이템을 조회합니다.**
+                    상점 타입에 따라 아이템을 조회합니다.
                     
-                    • **NPC 상점**: 포포 키우기용 먹이 아이템들 (당근, 물고기, 빵 등)
-                    • **부모 상점**: 부모가 해당 자녀를 위해 등록한 실제 상품들
+                    **NPC 상점 (type: "npc")**
+                    - 포포 키우기용 먹이 아이템들 (무한재고)
+                    - 상태: 항상 REGISTERED
                     
-                    ⚠️ **부모 상점은 로그인한 자녀만 볼 수 있는 개인화된 상품들입니다.**
+                    **부모 상점 (type: "parent")**  
+                    - 부모가 등록한 개인화 상품들 (재고 1개)
+                    - 상태: REGISTERED → PURCHASED → USED → APPROVED
                     """
     )
-    @Parameter(
-            name = "type",
-            description = """
-                    상점 타입을 지정합니다.
-                    
-                    **허용값:**
-                    • `npc` - NPC 상점 (포포 먹이)
-                    • `parent` - 부모 상점 (개인화 상품)
-                    """,
-            required = true,
-            example = "npc"
-    )
+    @Parameter(name = "type", description = "상점 타입 ('npc' 또는 'parent')", required = true, example = "npc")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "✅ 상품 목록 조회 성공"),
             @ApiResponse(responseCode = "400", description = "❌ 잘못된 타입 파라미터"),
@@ -71,55 +65,130 @@ public class MarketController {
         return ResponseEntity.ok(items);
     }
 
-    // 부모 상품 등록 API
+    // ===== 자녀용 API =====
+
+    @PostMapping("/buy")
+    @Tag(name = "시장 자녀용 API") // 👈 수정됨
+    @Operation(
+            summary = "상품 구매",
+            description = """
+                    NPC 상품 또는 부모 상품을 포인트로 구매합니다.
+                    
+                    **NPC 상품**: amount 파라미터로 수량 지정 (여러 개 구매 가능)
+                    **부모 상품**: 무조건 1개만 구매 (amount 무시)
+                    """
+    )
+    @io.swagger.v3.oas.annotations.parameters.RequestBody(
+            description = "구매 요청 정보",
+            content = @Content(
+                    mediaType = "application/json",
+                    examples = {
+                            @ExampleObject(name = "NPC 상품", value = """
+                                    {"productId": "550e8400-e29b-41d4-a716-446655440000", "amount": 5}"""),
+                            @ExampleObject(name = "부모 상품", value = """
+                                    {"productId": "550e8400-e29b-41d4-a716-446655440000"}""")
+                    }
+            )
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "✅ 구매 성공"),
+            @ApiResponse(responseCode = "400", description = "❌ 포인트 부족 또는 재고 부족"),
+            @ApiResponse(responseCode = "401", description = "❌ 인증 실패"),
+            @ApiResponse(responseCode = "404", description = "❌ 상품을 찾을 수 없음")
+    })
+    public ResponseEntity<PurchaseItemResponse> purchaseItem(@RequestBody PurchaseItemRequest request) {
+        UUID childId = getCurrentUserId();
+        log.info("🛒 구매 요청: 상품ID={}, 수량={}, 사용자ID={}", request.getProductId(), request.getAmount(), childId);
+
+        PurchaseItemResponse response = marketService.purchaseProduct(request, childId);
+        log.info("🎉 구매 완료!");
+
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/inventory")
+    @Tag(name = "시장 자녀용 API") // 👈 수정됨
+    @Operation(
+            summary = "인벤토리 조회",
+            description = """
+                    사용자가 보유한 모든 아이템을 조회합니다.
+                    
+                    **NPC 아이템**: 수량과 함께 표시, 포포 키우기에서 사용
+                    **부모 아이템**: 개별 아이템으로 표시, 인벤토리에서 직접 사용
+                    """
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "✅ 인벤토리 조회 성공"),
+            @ApiResponse(responseCode = "401", description = "❌ 인증 실패")
+    })
+    public ResponseEntity<List<InventoryItemResponse>> getUserInventory() {
+        UUID userId = getCurrentUserId();
+        List<InventoryItemResponse> inventory = inventoryService.getUserInventory(userId);
+        return ResponseEntity.ok(inventory);
+    }
+
+    @PostMapping("/inventory/use")
+    @Tag(name = "시장 자녀용 API") // 👈 수정됨
+    @Operation(
+            summary = "부모 상품 사용",
+            description = """
+                    인벤토리에서 부모 상품을 사용합니다.
+                    
+                    **부모 상품만 사용 가능**: NPC 상품은 포포 키우기에서만 사용
+                    **사용 효과**: 상품 상태가 USED로 변경되어 부모 승인 대기
+                    """
+    )
+    @io.swagger.v3.oas.annotations.parameters.RequestBody(
+            description = "상품 사용 요청",
+            content = @Content(
+                    mediaType = "application/json",
+                    examples = @ExampleObject(name = "부모 상품 사용", value = """
+                            {"productId": "550e8400-e29b-41d4-a716-446655440000"}""")
+            )
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "✅ 부모 상품 사용 성공"),
+            @ApiResponse(responseCode = "400", description = "❌ NPC 상품은 사용 불가"),
+            @ApiResponse(responseCode = "401", description = "❌ 인증 실패"),
+            @ApiResponse(responseCode = "404", description = "❌ 보유하지 않은 상품")
+    })
+    public ResponseEntity<UseItemResponse> useItem(@RequestBody UseItemRequest request) {
+        UUID childId = getCurrentUserId();
+        UseItemResponse response = inventoryService.useItem(request, childId);
+        return ResponseEntity.ok(response);
+    }
+
+    // ===== 부모용 API =====
+
     @PostMapping("/parent/products")
+    @Tag(name = "시장 부모용 API") // 👈 수정됨
     @Operation(
             summary = "부모 상품 등록",
             description = """
-                    **부모가 자녀를 위한 상품을 등록합니다.**
+                    부모가 자녀를 위한 상품을 등록합니다.
                     
-                    📝 **등록 프로세스:**
-                    1. 부모가 상품 정보와 라벨을 선택하여 등록
-                    2. 해당 자녀만 구매할 수 있는 개인화된 상품으로 생성
-                    3. 재고 관리 및 포인트 차감 시스템 적용
-                    
-                    🏷️ **상품 라벨 종류:**
-                    • `FOOD` - 먹이 (NPC 상품 전용)
-                    • `SNACK` - 간식
-                    • `ENTERTAINMENT` - 오락
-                    • `TOY` - 장난감  
-                    • `EDUCATION` - 교육 및 문구
-                    • `ETC` - 기타
-                    
-                    💡 **팁:** ML 분석을 위해 적절한 라벨을 선택해주세요!
+                    **등록 규칙**: 재고는 항상 1개, 상태는 REGISTERED
+                    **라벨 종류**: SNACK, ENTERTAINMENT, TOY, EDUCATION, ETC
                     """
     )
     @io.swagger.v3.oas.annotations.parameters.RequestBody(
             description = "상품 등록 정보",
-            required = true,
             content = @Content(
                     mediaType = "application/json",
-                    schema = @Schema(implementation = CreateProductRequest.class),
-                    examples = @ExampleObject(
-                            name = "상품 등록 예시",
-                            value = """
-                                    {
-                                        "childId": "550e8400-e29b-41d4-a716-446655440000",
-                                        "productName": "레고 클래식 세트",
-                                        "productPrice": 50000,
-                                        "productStock": 1,
-                                        "productImage": "https://example.com/lego.jpg",
-                                        "label": "TOY"
-                                    }
-                                    """
-                    )
+                    examples = @ExampleObject(value = """
+                            {
+                                "childId": "550e8400-e29b-41d4-a716-446655440000",
+                                "productName": "레고 클래식 세트",
+                                "productPrice": 50000,
+                                "productImage": "https://example.com/lego.jpg",
+                                "label": "TOY"
+                            }""")
             )
     )
     @ApiResponses({
-            @ApiResponse(responseCode = "201", description = "✅ 상품 등록 성공",
-                    content = @Content(schema = @Schema(implementation = MarketItemResponse.class))),
+            @ApiResponse(responseCode = "201", description = "✅ 상품 등록 성공"),
             @ApiResponse(responseCode = "400", description = "❌ 잘못된 요청 데이터"),
-            @ApiResponse(responseCode = "401", description = "❌ 인증 실패 (부모 권한 필요)"),
+            @ApiResponse(responseCode = "401", description = "❌ 인증 실패"),
             @ApiResponse(responseCode = "403", description = "❌ 본인의 자녀가 아님")
     })
     public ResponseEntity<MarketItemResponse> createParentProduct(@RequestBody CreateProductRequest request) {
@@ -130,228 +199,16 @@ public class MarketController {
         return ResponseEntity.status(HttpStatus.CREATED).body(createdProduct);
     }
 
-    // 구매 API
-    @PostMapping("/buy")
-    @Operation(
-            summary = "상품 구매",
-            description = """
-                    **NPC 상품 또는 부모 상품을 포인트로 구매합니다.**
-                    
-                    🛒 **구매 프로세스:**
-                    1. 포인트 잔액 확인
-                    2. 재고 확인 (부모 상품만, NPC 상품은 무한재고)
-                    3. 포인트 차감 및 재고 차감
-                    4. 인벤토리에 아이템 추가
-                    5. 구매 이력 MongoDB에 저장 (ML 분석용)
-                    
-                    💰 **포인트 시스템:**
-                    • 퀘스트 완료, 출석 체크 등으로 포인트 획득
-                    • 1포인트 = 1원 단위로 계산
-                    
-                    📦 **재고 관리:**
-                    • NPC 상품: 무한재고 (-1)
-                    • 부모 상품: 설정된 재고량만큼 구매 가능
-                    """
-    )
-    @io.swagger.v3.oas.annotations.parameters.RequestBody(
-            description = "구매 요청 정보",
-            required = true,
-            content = @Content(
-                    mediaType = "application/json",
-                    schema = @Schema(implementation = PurchaseItemRequest.class),
-                    examples = @ExampleObject(
-                            name = "구매 요청 예시",
-                            value = """
-                                    {
-                                        "productId": "550e8400-e29b-41d4-a716-446655440000",
-                                        "amount": 2
-                                    }
-                                    """
-                    )
-            )
-    )
-    @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "✅ 구매 성공",
-                    content = @Content(schema = @Schema(implementation = PurchaseItemResponse.class))),
-            @ApiResponse(responseCode = "400", description = "❌ 포인트 부족 또는 재고 부족"),
-            @ApiResponse(responseCode = "401", description = "❌ 인증 실패"),
-            @ApiResponse(responseCode = "404", description = "❌ 상품을 찾을 수 없음")
-    })
-    public ResponseEntity<PurchaseItemResponse> purchaseItem(@RequestBody PurchaseItemRequest request) {
-        System.out.println("=== 🛒 구매 API 진입! ===");
-        System.out.println("Request: " + request.getProductId() + ", amount: " + request.getAmount());
-
-        UUID childId = getCurrentUserId();
-        System.out.println("User ID: " + childId);
-
-        PurchaseItemResponse response = marketService.purchaseProduct(request, childId);
-        System.out.println("=== 🎉 구매 완료! ===");
-
-        return ResponseEntity.ok(response);
-    }
-
-    @GetMapping("/inventory")
-    @Operation(
-            summary = "인벤토리 조회",
-            description = """
-                    **사용자가 보유한 모든 아이템을 조회합니다.**
-                    
-                    📦 **아이템 타입별 사용법:**
-                    • **NPC 아이템** (`type: "npc"`): 포포 키우기에서 사용
-                      - 당근, 물고기, 빵 등의 먹이 아이템
-                      - 사용시 포포 경험치 증가
-                    
-                    • **부모 아이템** (`type: "parent"`): 인벤토리에서 직접 사용
-                      - 실제 상품 (장난감, 간식, 교육용품 등)
-                      - 사용시 부모에게 알림 전송
-                      - 사용 내역 추적
-                    
-                    💡 **재고 관리:** 수량이 0인 아이템은 자동으로 필터링됩니다.
-                    """
-    )
-    @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "✅ 인벤토리 조회 성공",
-                    content = @Content(schema = @Schema(implementation = InventoryItemResponse.class))),
-            @ApiResponse(responseCode = "401", description = "❌ 인증 실패")
-    })
-    public ResponseEntity<List<InventoryItemResponse>> getUserInventory() {
-        UUID userId = getCurrentUserId();
-        List<InventoryItemResponse> inventory = inventoryService.getUserInventory(userId);
-        return ResponseEntity.ok(inventory);
-    }
-
-    // 사용 API - 자녀용
-    @PostMapping("/inventory/usage")
-    @Operation(
-            summary = "인벤토리 상품 사용",
-            description = """
-                    **부모가 등록한 상품을 인벤토리에서 사용합니다.**
-                    
-                    ⚠️ **주의사항:**
-                    • NPC 상품은 사용 불가 (포포 키우기에서만 사용)
-                    • 부모 상품만 인벤토리에서 직접 사용 가능
-                    
-                    📬 **알림 시스템:**
-                    1. 상품 사용시 인벤토리에서 수량 차감
-                    2. 사용 내역이 DB에 기록
-                    3. 부모에게 실시간 알림 전송
-                    
-                    📊 **추적 정보:**
-                    • 사용 시간, 수량, 상품명 등이 기록
-                    • 부모는 사용 내역 조회 API로 확인 가능
-                    """
-    )
-    @io.swagger.v3.oas.annotations.parameters.RequestBody(
-            description = "상품 사용 요청",
-            required = true,
-            content = @Content(
-                    mediaType = "application/json",
-                    schema = @Schema(implementation = UseItemRequest.class),
-                    examples = @ExampleObject(
-                            name = "상품 사용 예시",
-                            value = """
-                                    {
-                                        "productId": "550e8400-e29b-41d4-a716-446655440000",
-                                        "amount": 1
-                                    }
-                                    """
-                    )
-            )
-    )
-    @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "✅ 상품 사용 성공",
-                    content = @Content(schema = @Schema(implementation = UseItemResponse.class))),
-            @ApiResponse(responseCode = "400", description = "❌ NPC 상품은 사용 불가 또는 수량 부족"),
-            @ApiResponse(responseCode = "401", description = "❌ 인증 실패"),
-            @ApiResponse(responseCode = "404", description = "❌ 보유하지 않은 상품")
-    })
-    public ResponseEntity<UseItemResponse> useItem(@RequestBody UseItemRequest request) {
-        UUID childId = getCurrentUserId();
-        UseItemResponse response = inventoryService.useItem(request, childId);
-        return ResponseEntity.ok(response);
-    }
-
-    // 사용 내역 조회 - 부모용
-    @GetMapping("/parent/usage-history")
-    @Operation(
-            summary = "자녀 상품 사용 내역 조회",
-            description = """
-                    **부모가 등록한 상품을 자녀가 사용한 내역을 시간순으로 조회합니다.**
-                    
-                    🔍 **조회 옵션:**
-                    • **특정 자녀**: `childId` 파라미터로 특정 자녀의 사용 내역만 조회
-                    • **모든 자녀**: `childId` 미입력시 등록된 모든 자녀의 사용 내역 조회
-                    
-                    📋 **포함 정보:**
-                    • 자녀 이름, 상품명, 사용 수량, 사용 시간
-                    • 시간 역순 정렬 (최신 사용 내역이 먼저)
-                    
-                    💡 **활용 팁:**
-                    • 자녀의 상품 소비 패턴 파악
-                    • 약속한 상품 사용 규칙 준수 여부 확인
-                    • 가정 내 보상 시스템 관리
-                    """
-    )
-    @Parameter(
-            name = "childId",
-            description = """
-                    조회할 자녀의 UUID입니다.
-                    
-                    • **입력시**: 해당 자녀의 사용 내역만 조회
-                    • **미입력시**: 모든 자녀의 사용 내역 조회
-                    """,
-            required = false,
-            example = "550e8400-e29b-41d4-a716-446655440000"
-    )
-    @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "✅ 사용 내역 조회 성공",
-                    content = @Content(schema = @Schema(implementation = UsageHistoryResponse.class))),
-            @ApiResponse(responseCode = "401", description = "❌ 인증 실패 (부모 권한 필요)"),
-            @ApiResponse(responseCode = "403", description = "❌ 다른 부모의 자녀 내역 접근 시도")
-    })
-    public ResponseEntity<List<UsageHistoryResponse>> getUsageHistory(
-            @RequestParam(value = "childId", required = false) UUID childId) {
-        UUID parentId = getCurrentUserId();
-        List<UsageHistoryResponse> history = marketParentService.getUsageHistory(parentId, childId);
-        return ResponseEntity.ok(history);
-    }
-
     @GetMapping("/parent/products")
+    @Tag(name = "시장 부모용 API") // 👈 수정됨
     @Operation(
             summary = "내가 등록한 상품 목록",
-            description = """
-                    **부모가 등록한 상품 목록을 조회합니다.**
-                    
-                    🔍 **조회 옵션:**
-                    • **특정 자녀용**: `childId` 파라미터로 특정 자녀를 위해 등록한 상품만 조회
-                    • **모든 상품**: `childId` 미입력시 모든 자녀용으로 등록한 상품 조회
-                    
-                    📦 **상품 상태 정보:**
-                    • `quantity`: 남은 재고 수량 (-1은 무한재고)
-                    • `type`: "parent" (부모 등록 상품)
-                    • `label`: 상품 카테고리 (ML 분석용)
-                    
-                    💼 **관리 기능:**
-                    • 등록한 상품의 구매 현황 파악
-                    • 재고 관리 및 추가 등록 결정
-                    • 자녀별 맞춤 상품 현황 확인
-                    """
+            description = "부모가 등록한 상품 목록을 조회합니다. (REGISTERED 상태만 표시)"
     )
-    @Parameter(
-            name = "childId",
-            description = """
-                    조회할 자녀의 UUID입니다.
-                    
-                    • **입력시**: 해당 자녀용으로 등록한 상품만 조회
-                    • **미입력시**: 모든 자녀용 등록 상품 조회
-                    """,
-            required = false,
-            example = "550e8400-e29b-41d4-a716-446655440000"
-    )
+    @Parameter(name = "childId", description = "특정 자녀의 상품만 조회 (선택사항)", required = false)
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "✅ 등록 상품 목록 조회 성공",
-                    content = @Content(schema = @Schema(implementation = MarketItemResponse.class))),
-            @ApiResponse(responseCode = "401", description = "❌ 인증 실패 (부모 권한 필요)")
+            @ApiResponse(responseCode = "200", description = "✅ 등록 상품 목록 조회 성공"),
+            @ApiResponse(responseCode = "401", description = "❌ 인증 실패")
     })
     public ResponseEntity<List<MarketItemResponse>> getMyProducts(
             @RequestParam(value = "childId", required = false) UUID childId) {
@@ -360,66 +217,110 @@ public class MarketController {
         return ResponseEntity.ok(products);
     }
 
-    // MarketController.java에 추가할 메서드
-
     @DeleteMapping("/parent/products/{productId}")
+    @Tag(name = "시장 부모용 API") // 👈 수정됨
     @Operation(
-            summary = "부모 상품 삭제 (단종 처리)",
+            summary = "부모 상품 삭제",
             description = """
-                **부모가 특정 자녀를 위해 등록한 상품을 삭제(단종)합니다.**
-                
-                🔄 **처리 과정:**
-                1. 해당 자녀용으로 등록된 상품인지 확인
-                2. 상품 상태를 'DISCONTINUED'로 변경
-                3. 상점에서는 더 이상 보이지 않음 (구매 불가)
-                4. 자녀 인벤토리의 기존 아이템은 그대로 유지
-                
-                ⚠️ **주의사항:**
-                • 본인이 등록한 상품만 삭제 가능
-                • 해당 자녀용으로 등록된 상품만 삭제 가능
-                • NPC 상품은 삭제 불가
-                
-                💡 **예시:**
-                • 첫째 아이용 "레고 세트" 삭제
-                • 둘째 아이용 "닌텐도 스위치" 삭제
-                """
+                    부모가 등록한 상품을 삭제합니다.
+                    
+                    **삭제 조건**: REGISTERED 상태인 상품만 삭제 가능 (구매 전)
+                    **처리 방식**: 상태를 DISCONTINUED로 변경
+                    """
     )
-    @Parameter(
-            name = "productId",
-            description = "삭제할 상품의 UUID",
-            required = true,
-            example = "550e8400-e29b-41d4-a716-446655440000"
-    )
-    @Parameter(
-            name = "childId",
-            description = """
-                삭제할 상품이 등록된 자녀의 UUID
-                
-                • **필수 파라미터**: 어떤 자녀의 상품을 삭제할지 지정
-                • **권한 확인**: 해당 자녀가 요청자의 자녀인지 검증
-                • **상품 매칭**: 해당 자녀용으로 등록된 상품인지 확인
-                """,
-            required = true,
-            example = "123e4567-e89b-12d3-a456-426614174000"
-    )
+    @Parameter(name = "productId", description = "삭제할 상품의 UUID", required = true)
+    @Parameter(name = "childId", description = "해당 자녀의 UUID", required = true)
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "✅ 상품 삭제(단종) 성공"),
-            @ApiResponse(responseCode = "401", description = "❌ 인증 실패 (부모 권한 필요)"),
-            @ApiResponse(responseCode = "403", description = "❌ 본인의 자녀가 아니거나 해당 자녀용 상품이 아님"),
-            @ApiResponse(responseCode = "404", description = "❌ 상품 또는 자녀를 찾을 수 없음"),
-            @ApiResponse(responseCode = "400", description = "❌ NPC 상품은 삭제 불가 또는 잘못된 요청")
+            @ApiResponse(responseCode = "200", description = "✅ 상품 삭제 성공"),
+            @ApiResponse(responseCode = "400", description = "❌ 이미 구매된 상품"),
+            @ApiResponse(responseCode = "401", description = "❌ 인증 실패"),
+            @ApiResponse(responseCode = "403", description = "❌ 권한 없음"),
+            @ApiResponse(responseCode = "404", description = "❌ 상품을 찾을 수 없음")
     })
     public ResponseEntity<String> deleteParentProduct(
             @PathVariable UUID productId,
             @RequestParam UUID childId) {
-
         UUID parentId = getCurrentUserId();
-        log.info("상품 삭제 요청: 상품ID={}, 자녀ID={}, 부모ID={}",
-                productId, childId, parentId);
+        log.info("상품 삭제 요청: 상품ID={}, 자녀ID={}, 부모ID={}", productId, childId, parentId);
 
         marketParentService.deleteParentProduct(productId, childId, parentId);
-
-        return ResponseEntity.ok("상품이 성공적으로 삭제되었습니다. (기존 보유 아이템은 유지됩니다)");
+        return ResponseEntity.ok("상품이 성공적으로 삭제되었습니다.");
     }
 
+    @GetMapping("/parent/pending-approvals")
+    @Tag(name = "시장 부모용 API") // 👈 수정됨
+    @Operation(
+            summary = "자녀 상품 사용 승인 대기 목록",
+            description = """
+                    자녀가 사용한 상품 중 부모 승인이 필요한 목록을 조회합니다.
+                    
+                    **조회 상태**: USED (자녀가 사용했지만 아직 승인되지 않음)
+                    **정렬**: 사용 시간순 (최신순)
+                    """
+    )
+    @Parameter(name = "childId", description = "조회할 자녀의 UUID (선택사항)", required = false)
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "✅ 승인 대기 목록 조회 성공"),
+            @ApiResponse(responseCode = "401", description = "❌ 인증 실패"),
+            @ApiResponse(responseCode = "403", description = "❌ 권한 없음")
+    })
+    public ResponseEntity<List<ApprovalItemResponse>> getPendingApprovals(
+            @RequestParam(value = "childId", required = false) UUID childId) {
+        UUID parentId = getCurrentUserId();
+        List<ApprovalItemResponse> pendingApprovals = marketParentService.getPendingApprovals(parentId, childId);
+        return ResponseEntity.ok(pendingApprovals);
+    }
+
+    @PostMapping("/parent/approve/{productId}")
+    @Tag(name = "시장 부모용 API") // 👈 수정됨
+    @Operation(
+            summary = "자녀 상품 사용 승인",
+            description = """
+                    자녀가 사용 요청한 상품을 승인합니다.
+                    
+                    **승인 프로세스**: USED → APPROVED 상태 변경
+                    **안전성**: childId로 정확한 자녀의 상품인지 확인
+                    """
+    )
+    @Parameter(name = "productId", description = "승인할 상품의 UUID", required = true)
+    @Parameter(name = "childId", description = "해당 자녀의 UUID", required = true)
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "✅ 상품 사용 승인 성공"),
+            @ApiResponse(responseCode = "400", description = "❌ 승인 대기 상태가 아님"),
+            @ApiResponse(responseCode = "401", description = "❌ 인증 실패"),
+            @ApiResponse(responseCode = "403", description = "❌ 권한 없음"),
+            @ApiResponse(responseCode = "404", description = "❌ 상품을 찾을 수 없음")
+    })
+    public ResponseEntity<String> approveUsage(
+            @PathVariable UUID productId,
+            @RequestParam UUID childId) {
+        UUID parentId = getCurrentUserId();
+        log.info("사용 승인 요청: 상품ID={}, 자녀ID={}, 부모ID={}", productId, childId, parentId);
+
+        marketParentService.approveUsage(productId, childId, parentId);
+        return ResponseEntity.ok("상품 사용이 승인되었습니다.");
+    }
+
+    @GetMapping("/parent/approved-history")
+    @Tag(name = "시장 부모용 API") // 👈 수정됨
+    @Operation(
+            summary = "승인 완료된 상품 내역 조회",
+            description = """
+                    부모가 승인 완료한 자녀의 상품 사용 내역을 조회합니다.
+                    
+                    **조회 상태**: APPROVED (승인 완료된 상품들)
+                    **정렬**: 승인 시간순 (최신순)
+                    """
+    )
+    @Parameter(name = "childId", description = "조회할 자녀의 UUID (선택사항)", required = false)
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "✅ 승인 완료 내역 조회 성공"),
+            @ApiResponse(responseCode = "401", description = "❌ 인증 실패")
+    })
+    public ResponseEntity<List<ApprovalItemResponse>> getApprovedHistory(
+            @RequestParam(value = "childId", required = false) UUID childId) {
+        UUID parentId = getCurrentUserId();
+        List<ApprovalItemResponse> history = marketParentService.getApprovedHistory(parentId, childId);
+        return ResponseEntity.ok(history);
+    }
 }

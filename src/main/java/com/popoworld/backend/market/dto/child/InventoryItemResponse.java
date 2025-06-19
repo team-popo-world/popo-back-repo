@@ -10,7 +10,7 @@ public class InventoryItemResponse {
     private UUID productId;
     private String name;
     private String imageUrl;
-    private int stock; //보유 수량
+    private int stock; //보유 수량. NPC 상품: 실제 수량, 부모 상품: 항상 1
     private String type; //"npc" or "parent"
     private int exp;
     private int price;
