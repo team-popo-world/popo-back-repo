@@ -60,7 +60,8 @@ public class MarketParentService {
         }
 
         return products.stream()
-                .map(MarketItemResponse::fromEntity)
+                .filter(p -> p.getState() == ProductStatus.REGISTERED)  // 🔥 먼저 필터링
+                .map(MarketItemResponse::fromEntity)                     // 🔥 그 다음 변환
                 .toList();
     }
     // 🔥 사용 내역 조회
