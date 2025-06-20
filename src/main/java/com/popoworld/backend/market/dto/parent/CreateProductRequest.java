@@ -14,7 +14,6 @@ public class CreateProductRequest {
     private UUID childId;
     private String productName;
     private int productPrice;
-    private int productStock;
     private String productImage;
     private ProductLabel label;
 }
