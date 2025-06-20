@@ -1,7 +1,6 @@
 package com.popoworld.backend.User.controller;
 
 import com.popoworld.backend.User.dto.Request.*;
-import com.popoworld.backend.User.dto.Response.ChildLoginResponseDTO;
 import com.popoworld.backend.User.dto.Response.LoginResponseDTO;
 import com.popoworld.backend.User.dto.Response.RefreshTokenResponseDTO;
 import com.popoworld.backend.User.service.UserService;
@@ -12,6 +11,10 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.UUID;
+
+import static com.popoworld.backend.global.token.SecurityUtil.getCurrentUserId;
 
 @RestController
 @RequestMapping("/auth")
@@ -60,5 +63,13 @@ public class UserController {
         headers.set("Refresh-Token", tokens.getRefreshToken());
 
         return ResponseEntity.noContent().headers(headers).build();
+    }
+
+    @Operation(summary = "회원 정보 조회", description = "회원 정보 조회")
+    @GetMapping
+    public ResponseEntity<LoginResponseDTO> getUserInfo() {
+        UUID userId = getCurrentUserId();
+        LoginResponseDTO dto = userService.getUserInfo(userId);
+        return ResponseEntity.ok(dto);
     }
 }
