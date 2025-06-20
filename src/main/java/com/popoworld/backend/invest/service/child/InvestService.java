@@ -2,6 +2,8 @@ package com.popoworld.backend.invest.service.child;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import com.popoworld.backend.User.User;
+import com.popoworld.backend.User.repository.UserRepository;
 import com.popoworld.backend.invest.dto.child.request.ClearChapterRequest;
 import com.popoworld.backend.invest.dto.child.request.TurnDataRequest;
 import com.popoworld.backend.invest.dto.child.response.ChapterDataResponse;
@@ -11,10 +13,12 @@ import com.popoworld.backend.invest.entity.InvestHistory;
 import com.popoworld.backend.invest.entity.InvestScenario;
 import com.popoworld.backend.invest.entity.InvestSession;
 import com.popoworld.backend.invest.investHistoryKafka.InvestHistoryKafkaProducer;
+import com.popoworld.backend.invest.repository.InvestChapterRepository;
 import com.popoworld.backend.invest.repository.InvestScenarioRepository;
 import com.popoworld.backend.invest.repository.InvestSessionRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -31,38 +35,67 @@ public class InvestService {
     private final InvestScenarioRepository investScenarioRepository;
     private final InvestSessionRepository investSessionRepository;
     private final InvestHistoryKafkaProducer investHistoryKafkaProducer;
+    private final UserRepository userRepository;
+    private final InvestChapterRepository investChapterRepository;
 
+    @Transactional
     public ChapterDataResponse getChapterDataAndCreateSession(String chapterId){
-        // 1. 시나리오 조회 (우선순위: 커스텀 시나리오 > 기본 시나리오)
+        UUID childId = getCurrentUserId();
+
+        //1. 유저 조회 및 시드머니 확인
+        User child = userRepository.findById(childId)
+                .orElseThrow(()-> new RuntimeException("사용자를 찾을 수 없습니다."));
+
+        //2. 챕터 정보 조회하여 시드머니 확인
+        var chapter = investChapterRepository.findById(chapterId)
+                .orElseThrow(()->new RuntimeException("해당 챕터를 찾을 수 없습니다."));
+
+        // 3. 포인트 충분한지 확인
+        if (!child.hasEnoughPoints(chapter.getSeedMoney())) {
+            throw new RuntimeException("포인트가 부족합니다. 필요 포인트: " + chapter.getSeedMoney() +
+                    ", 보유 포인트: " + child.getPoint());
+        }
+
+        // 4. 시나리오 조회(우선순위: 해당 아이의 커스텀 시나리오 > 기본 시나리오)
         InvestScenario selectedScenario = null;
 
-        //1-1. 먼저 커스텀 시나리오들 조회 (isCustom = true)
-        List<InvestScenario>customScenarios = investScenarioRepository.findByInvestChapter_ChapterIdAndIsCustom(chapterId,true);
+        // 4-1. 먼저 해당 아이의 커스텀 시나리오들 조회 (childId = 현재 사용자 & isCustom = true)
+        List<InvestScenario> customScenarios = investScenarioRepository
+                .findByChildIdAndInvestChapter_ChapterIdAndIsCustom(childId, chapterId, true);
 
         if(!customScenarios.isEmpty()){
-            //커스텀 시나리오가 있으면 그 중에서 랜덤으로 선택
+            // 해당 아이의 커스텀 시나리오가 있으면 그 중에서 랜덤으로 선택
             Random random = new Random();
             int randomIndex = random.nextInt(customScenarios.size());
             selectedScenario = customScenarios.get(randomIndex);
-        }
-        else{
-            //1-2. 커스텀 시나리오가 없으면 기본 시나리오들 조회
-            List<InvestScenario> defaultScenarios = investScenarioRepository.findByInvestChapter_ChapterIdAndIsCustom(chapterId,false);
+        } else {
+            // 4-2. 커스텀 시나리오가 없으면 기본 시나리오들 조회 (childId = null & isCustom = false)
+            List<InvestScenario> defaultScenarios = investScenarioRepository
+                    .findByChildIdIsNullAndInvestChapter_ChapterIdAndIsCustom(chapterId, false);
+
             if(!defaultScenarios.isEmpty()){
-                //기본 시나리오 중에서 랜덤으로 선택
+                // 기본 시나리오 중에서 랜덤으로 선택
                 Random random = new Random();
                 int randomIndex = random.nextInt(defaultScenarios.size());
                 selectedScenario = defaultScenarios.get(randomIndex);
             }
-            //시나리오를 찾지 못한 경우
-            if(selectedScenario ==null){
-                throw new RuntimeException("해당 챕터 시나리오를 찾지 못했습니다.");
-            }
         }
-        // 2. 새로운 게임 세션 생성
+
+        // 시나리오를 찾지 못한 경우
+        if(selectedScenario == null){
+            throw new RuntimeException("해당 챕터 시나리오를 찾지 못했습니다.");
+        }
+
+        // 5. 시드머니 차감
+        child.deductPoints(chapter.getSeedMoney());
+        userRepository.save(child);
+
+        // 6. 새로운 게임 세션 생성
         UUID sessionId = UUID.randomUUID();
-        UUID childId = getCurrentUserId();
         LocalDateTime now = LocalDateTime.now(ZoneId.of("Asia/Seoul"));
+
+        System.out.println("🔍 저장 전 - childId: " + childId);
+        System.out.println("🔍 저장 전 - chapterId: " + chapterId);
 
         InvestSession newSession = new InvestSession(
                 sessionId,        // 새로 생성한 세션 ID
@@ -75,25 +108,44 @@ public class InvestService {
                 selectedScenario          // 조회한 scenario 객체
         );
 
-        // 3. 세션 저장
+        // 7. 세션 저장
         investSessionRepository.save(newSession);
 
-        // 4. 응답 DTO 반환
+        // 8. 응답 DTO 반환
         return new ChapterDataResponse(sessionId.toString(), selectedScenario.getStory());
     }
 
+
+    @Transactional
     public ClearChapterResponse clearChapter(String chapterId, ClearChapterRequest request){
+        UUID childId = getCurrentUserId();
+
         // 1. sessionId 변환
         UUID sessionId = UUID.fromString(request.getSessionId());
 
         // 2. 기존 세션 찾기
-        InvestSession existingSession = investSessionRepository.findById(sessionId).orElse(null);
+        InvestSession existingSession = investSessionRepository.findById(sessionId)
+                .orElseThrow(() -> new RuntimeException("해당 게임 세션을 찾을 수 없습니다."));
 
-        if (existingSession == null) {
-            throw new RuntimeException("해당 게임 세션을 찾을 수 없습니다.");
+        // 3. 유저 조회
+        User child = userRepository.findById(childId)
+                .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
+
+        // 4. 챕터 정보 조회
+        var chapter = investChapterRepository.findById(chapterId)
+                .orElseThrow(() -> new RuntimeException("해당 챕터를 찾을 수 없습니다."));
+
+        // 5. 포인트 정산
+        if (request.getSuccess() != null && request.getSuccess()) {
+            // 성공한 경우: 시드머니 + 수익 지급
+            int totalReward = chapter.getSeedMoney() + (request.getProfit() != null ? request.getProfit() : 0);
+            child.addPoints(totalReward);
         }
+        // 실패하거나 중간에 나간 경우: 이미 차감된 시드머니는 돌려주지 않음
 
-        // 3. 기존 세션 업데이트
+        userRepository.save(child);
+
+        // 6. 기존 세션 업데이트
         LocalDateTime endedAt = LocalDateTime.now(ZoneId.of("Asia/Seoul"));
 
         InvestSession updatedSession = new InvestSession(
@@ -107,13 +159,18 @@ public class InvestService {
                 existingSession.getInvestScenario()    // 기존 scenario 유지
         );
 
-        // 4. 업데이트된 세션 저장
+        // 7. 업데이트된 세션 저장
         investSessionRepository.save(updatedSession);
 
-        // 5. 응답 DTO 반환
-        return new ClearChapterResponse("✅ 게임 세션이 성공적으로 업데이트되었습니다.");
+        // 8. 응답 DTO 반환
+        String message = request.getSuccess() != null && request.getSuccess()
+                ? "✅ 게임 성공! 포인트가 지급되었습니다."
+                : "📝 게임 세션이 종료되었습니다.";
 
+        return new ClearChapterResponse(message);
     }
+
+
     public TurnDataResponse updateGameData(String chapterId, Integer turn, TurnDataRequest request) {
         // 1. sessionId 변환
         UUID investSessionId = UUID.fromString(request.getSessionId());
