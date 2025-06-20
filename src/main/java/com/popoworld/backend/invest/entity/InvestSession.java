@@ -29,6 +29,8 @@ public class InvestSession {
 
     private Integer profit;
 
+    private Integer clusterNum;
+
     @ManyToOne(fetch= FetchType.LAZY)
     @JoinColumn(name="scenario_id")
     private InvestScenario investScenario;

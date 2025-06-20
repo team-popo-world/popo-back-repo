@@ -105,6 +105,7 @@ public class InvestService {
                 null,             // endedAt - 아직 게임이 안 끝남
                 null,             // success - 아직 모름
                 null,             // profit - 아직 모름
+                null,             // ml 분석 후 배정
                 selectedScenario          // 조회한 scenario 객체
         );
 
@@ -156,6 +157,7 @@ public class InvestService {
                 endedAt,                               // 종료 시간은 현재 시간
                 request.getSuccess(),                  // 프론트에서 받은 성공 여부
                 request.getProfit(),                   // 프론트에서 받은 수익률
+                null,
                 existingSession.getInvestScenario()    // 기존 scenario 유지
         );
 

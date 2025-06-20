@@ -1,14 +1,13 @@
-package com.popoworld.backend.invest.service;
+package com.popoworld.backend.sse;
 
-import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
-@Component
-public class SseEmitters {
+public class AbstractSseEmitters {
+
     private final Map<UUID, SseEmitter> emitters = new ConcurrentHashMap<>();
 
     public SseEmitter create(UUID userId) {
@@ -27,8 +26,8 @@ public class SseEmitters {
 
         try {
             emitter.send(SseEmitter.event()
-                .name("connect")
-                .data("connected"));
+                    .name("connect")
+                    .data("connected"));
         } catch (Exception e) {
             emitter.completeWithError(e);
             emitters.remove(userId);
@@ -37,12 +36,12 @@ public class SseEmitters {
         return emitter;
     }
 
-    public void send(UUID userId, Object data) {
+    public void send(UUID userId, Object data, String eventName) {
         SseEmitter emitter = emitters.get(userId);
         if (emitter != null) {
             try {
                 emitter.send(SseEmitter.event()
-                        .name("chatbot")
+                        .name(eventName)
                         .data(data));
             } catch (Exception e) {
                 emitter.completeWithError(e);
@@ -51,4 +50,3 @@ public class SseEmitters {
         }
     }
 }
-

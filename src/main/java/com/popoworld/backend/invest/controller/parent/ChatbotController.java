@@ -3,8 +3,7 @@ package com.popoworld.backend.invest.controller.parent;
 import com.popoworld.backend.global.token.JwtTokenProvider;
 import com.popoworld.backend.invest.dto.parent.dto.request.*;
 import com.popoworld.backend.invest.dto.parent.dto.response.CustomScenarioListDTO;
-import com.popoworld.backend.invest.dto.parent.dto.response.GetCustomScenarioListResponseDTO;
-import com.popoworld.backend.invest.service.SseEmitters;
+import com.popoworld.backend.invest.service.parent.ChatbotSseEmitters;
 import com.popoworld.backend.invest.service.parent.ParentInvestService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -17,7 +16,6 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import java.nio.file.AccessDeniedException;
-import java.util.List;
 import java.util.UUID;
 
 import static com.popoworld.backend.global.token.SecurityUtil.getCurrentUserId;
@@ -30,7 +28,7 @@ public class ChatbotController {
 
     private final JwtTokenProvider jwtTokenProvider;
     private final ParentInvestService parentInvestService;
-    private final SseEmitters sseEmitters;
+    private final ChatbotSseEmitters sseEmitters;
 
     @Operation(summary = "시나리오 수정 세팅", description = "시나리오 불러오기 및 redis에 임시 저장")
     @PostMapping("/edit-scenario")
