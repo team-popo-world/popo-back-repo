@@ -1,6 +1,5 @@
 package com.popoworld.backend.invest.service.parent;
 
-import com.popoworld.backend.invest.service.SseEmitters;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.kafka.annotation.KafkaListener;
@@ -15,7 +14,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class ChatbotResponseConsumer {
 
-    private final SseEmitters sseEmitters;
+    private final ChatbotSseEmitters sseEmitters;
     private final RedisTemplate<String, String> redisTemplate;
 
     @KafkaListener(topics = "chatbot.response", groupId = "chatbot-response-group")
