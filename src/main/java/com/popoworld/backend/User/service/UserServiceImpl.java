@@ -19,6 +19,7 @@ import org.springframework.stereotype.Service;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -155,6 +156,36 @@ public class UserServiceImpl implements UserService {
         redisTemplate.opsForValue().set(userEmail, newRefreshToken, TTL);
 
         return new RefreshTokenResponseDTO(newAccessToken, newRefreshToken);
+    }
+
+    @Override
+    public LoginResponseDTO getUserInfo(UUID userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 사용자입니다."));
+
+        if ("Parent".equalsIgnoreCase(user.getRole())) {
+            List<User> children = userRepository.findAllChildrenByParentId(user.getUserId());
+            return new ParentLoginResponseDTO(
+                    null,
+                    null,
+                    user.getRole(),
+                    user.getName(),
+                    user.getParentCode(),
+                    children.stream()
+                            .map(c -> ChildInfoDTO.builder().user(c).build())
+                            .toList()
+            );
+        } else if ("Child".equalsIgnoreCase(user.getRole())) {
+            return new ChildLoginResponseDTO(
+                    null,
+                    null,
+                    user.getRole(),
+                    user.getName(),
+                    user.getPoint()
+            );
+        } else {
+            throw new IllegalArgumentException("role 값은 'Parent' 또는 'Child'만 가능합니다.");
+        }
     }
 
 
