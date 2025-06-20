@@ -1,6 +1,8 @@
 // InventoryService.java
 package com.popoworld.backend.market.service.child;
 
+import com.popoworld.backend.User.User;
+import com.popoworld.backend.User.repository.UserRepository;
 import com.popoworld.backend.market.dto.child.InventoryItemResponse;
 import com.popoworld.backend.market.dto.child.UseItemRequest;
 import com.popoworld.backend.market.dto.child.UseItemResponse;
@@ -23,11 +25,33 @@ import java.util.UUID;
 public class InventoryService {
     private final InventoryRepository inventoryRepository;
     private final ProductRepository productRepository;
+    private final UserRepository userRepository;
 
+    // 자녀용: 본인 인벤토리 조회
     public List<InventoryItemResponse> getUserInventory(UUID userId) {
         List<Inventory> inventoryItems = inventoryRepository.findByUser_UserId(userId);
         return inventoryItems.stream()
                 .filter(inventory -> inventory.getStock() > 0) // 수량이 0인 것 제외
+                .map(InventoryItemResponse::fromEntity)
+                .toList();
+    }
+
+    // 부모용: 자녀 인벤토리 조회 (부모 상품만)
+    public List<InventoryItemResponse> getChildInventoryForParent(UUID childId, UUID parentId) {
+        // 1. 자녀 확인 및 권한 검증
+        User child = userRepository.findById(childId)
+                .orElseThrow(() -> new IllegalArgumentException("자녀를 찾을 수 없습니다."));
+
+        // 2. 자녀 소유권 확인
+        if (!child.getParent().getUserId().equals(parentId)) {
+            throw new IllegalArgumentException("본인의 자녀가 아닙니다.");
+        }
+
+        // 3. 자녀 인벤토리 조회 (부모 상품만 필터링)
+        List<Inventory> inventoryItems = inventoryRepository.findByUser_UserId(childId);
+        return inventoryItems.stream()
+                .filter(inventory -> inventory.getStock() > 0)
+                .filter(inventory -> inventory.getProduct().getUser() != null) // ✅ NPC 상품 제외
                 .map(InventoryItemResponse::fromEntity)
                 .toList();
     }

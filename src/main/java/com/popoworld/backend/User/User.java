@@ -8,8 +8,6 @@ import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.UUID;
 
 @Getter
@@ -41,5 +39,22 @@ public class User {
     @CreationTimestamp
     private LocalDateTime createdAt;
 
+    //포인트 차감 메서드
+    public void deductPoints(int amount) {
+        if (this.point < amount) {
+            throw new IllegalStateException("보유 포인트가 부족합니다. 현재 포인트: " + this.point + ", 필요 포인트: " + amount);
+        }
+        this.point -= amount;
+    }
+
+    //포인트 추가 메서드
+    public void addPoints(int amount) {
+        this.point += amount;
+    }
+
+    //포인트 충분한지 확인
+    public boolean hasEnoughPoints(int amount) {
+        return this.point >= amount;
+    }
 }
 

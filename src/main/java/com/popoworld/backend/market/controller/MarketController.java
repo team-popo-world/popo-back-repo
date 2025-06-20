@@ -323,4 +323,35 @@ public class MarketController {
         List<ApprovalItemResponse> history = marketParentService.getApprovedHistory(parentId, childId);
         return ResponseEntity.ok(history);
     }
+
+    @GetMapping("/parent/child-inventory")
+    @Tag(name = "시장 API - 부모용")
+    @Operation(
+            summary = "자녀 인벤토리 조회 (부모 상품만)",
+            description = """
+                    부모가 자녀의 인벤토리를 조회합니다.
+                    
+                    **표시 상품**: 부모가 등록한 상품만 표시 (NPC 상품 제외)
+                    **목적**: 자녀가 보유한 부모 구매 상품 현황 파악
+                    **권한**: 본인의 자녀 인벤토리만 조회 가능
+                    """
+    )
+    @Parameter(
+            name = "childId",
+            description = "조회할 자녀의 UUID",
+            required = true,
+            example = "550e8400-e29b-41d4-a716-446655440000"
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "✅ 자녀 인벤토리 조회 성공"),
+            @ApiResponse(responseCode = "401", description = "❌ 인증 실패 (부모 권한 필요)"),
+            @ApiResponse(responseCode = "403", description = "❌ 본인의 자녀가 아님"),
+            @ApiResponse(responseCode = "404", description = "❌ 자녀를 찾을 수 없음")
+    })
+    public ResponseEntity<List<InventoryItemResponse>> getChildInventory(
+            @RequestParam UUID childId) {
+        UUID parentId = getCurrentUserId();
+        List<InventoryItemResponse> inventory = inventoryService.getChildInventoryForParent(childId, parentId);
+        return ResponseEntity.ok(inventory);
+    }
 }
