@@ -11,20 +11,23 @@ import java.util.UUID;
 
 @Repository
 public interface InvestScenarioRepository extends JpaRepository<InvestScenario, UUID> {
+
     InvestScenario findByInvestChapter_ChapterId(String chapterId);
-    //실제 실행되는 쿼리
-    //SELECT * FROM invest_scenario
-    //WHERE chapter_id = ?
-    //InvestScenario 엔티티의 investChapter 필드
 
     InvestScenario findTopByUpdatedAtIsNullOrderByCreateAtAsc();
 
-    // 새로 추가 - 특정 챕터 중에서 가장 오래된 미업데이트 시나리오 찾기
+    //특정 챕터 중에서 가장 오래된 미업데이트 시나리오 찾기
     InvestScenario findTopByInvestChapter_ChapterIdAndUpdatedAtIsNullOrderByCreateAtAsc(String chapterId);
 
-
-    // 새로 추가 - 특정 챕터 + 커스텀 여부로 시나리오 리스트 조회
+    //특정 챕터 + 커스텀 여부로 시나리오 리스트 조회
     List<InvestScenario> findByInvestChapter_ChapterIdAndIsCustom(String chapterId, Boolean isCustom);
 
+    //특정 아이의 커스텀 시나리오 조회
+    List<InvestScenario> findByChildIdAndInvestChapter_ChapterIdAndIsCustom(UUID childId, String chapterId, Boolean isCustom);
+
+    //기본 시나리오 조회 (childId가 null인 경우)
+    List<InvestScenario> findByChildIdIsNullAndInvestChapter_ChapterIdAndIsCustom(String chapterId, Boolean isCustom);
+
+    //페이징 조회
     Page<InvestScenario> findByChildIdAndInvestChapter_ChapterId(UUID childId, String chapterId, Pageable pageable);
 }
