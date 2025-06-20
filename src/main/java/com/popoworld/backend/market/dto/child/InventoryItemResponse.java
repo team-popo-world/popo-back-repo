@@ -3,6 +3,7 @@ package com.popoworld.backend.market.dto.child;
 import com.popoworld.backend.market.entity.Inventory;
 import lombok.Data;
 
+import java.time.LocalDate;
 import java.util.UUID;
 
 @Data
@@ -14,6 +15,7 @@ public class InventoryItemResponse {
     private String type; //"npc" or "parent"
     private int exp;
     private int price;
+    private LocalDate purchasedAt;
 
     public static InventoryItemResponse fromEntity(Inventory inventory){
         InventoryItemResponse dto = new InventoryItemResponse();
@@ -22,6 +24,7 @@ public class InventoryItemResponse {
         dto.imageUrl=inventory.getProduct().getProductImage();
         dto.stock=inventory.getStock();
         dto.price = inventory.getProduct().getProductPrice();
+        dto.purchasedAt = inventory.getPurchasedAt().toLocalDate();
 
 
         //타입에 따른 설정

@@ -325,7 +325,7 @@ public class MarketController {
     }
 
     @GetMapping("/parent/child-inventory")
-    @Tag(name = "시장 API - 부모용")
+    @Tag(name = "시장 부모용 API")
     @Operation(
             summary = "자녀 인벤토리 조회 (부모 상품만)",
             description = """

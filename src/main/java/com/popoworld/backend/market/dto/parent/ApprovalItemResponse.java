@@ -3,6 +3,7 @@ package com.popoworld.backend.market.dto.parent;
 import com.popoworld.backend.market.entity.Product;
 import lombok.Data;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -13,7 +14,7 @@ public class ApprovalItemResponse {
     private String productName;
     private int price;
     private String imageUrl;
-    private LocalDateTime usedAt;
+    private LocalDate usedAt;
 
     public static ApprovalItemResponse fromEntity(Product product) {
         ApprovalItemResponse dto = new ApprovalItemResponse();
@@ -22,7 +23,10 @@ public class ApprovalItemResponse {
         dto.productName = product.getProductName();
         dto.price = product.getProductPrice();
         dto.imageUrl = product.getProductImage();
-        dto.usedAt = product.getUpdatedAt();
+        if (product.getUpdatedAt() != null) {
+            dto.usedAt = product.getUpdatedAt().toLocalDate();
+        }
+
         return dto;
     }
 }
