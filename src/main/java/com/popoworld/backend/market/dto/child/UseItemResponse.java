@@ -8,6 +8,6 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class UseItemResponse {
+    private String message;
     private int remainingStock; //사용 후 남은 수량
-    private int usedAmount; //사용한 수량
 }

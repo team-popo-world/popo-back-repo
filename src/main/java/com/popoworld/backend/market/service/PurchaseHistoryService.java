@@ -12,6 +12,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.UUID;
 
 @Slf4j
@@ -30,7 +31,7 @@ public class PurchaseHistoryService {
                     product.getProductName(),
                     product.getProductPrice(),
                     amount,
-                    LocalDateTime.now(),
+                    LocalDateTime.now(ZoneId.of("Asia/Seoul")),
                     childId.toString(), // 🔥 UUID -> String 변환
                     product.getProductId().toString(), // 🔥 UUID -> String 변환
                     product.getUser() != null ? product.getUser().getParent().getUserId().toString() : null, // 🔥 UUID -> String 변환

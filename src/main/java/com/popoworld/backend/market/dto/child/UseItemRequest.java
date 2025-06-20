@@ -7,5 +7,5 @@ import java.util.UUID;
 @Data
 public class UseItemRequest {
     private UUID productId;
-    private int amount; //사용할 수량
+    private Integer amount; //NPC 상품용. 부모 상품은 1개 무조건
     }

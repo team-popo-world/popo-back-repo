@@ -4,7 +4,6 @@ import com.popoworld.backend.User.User;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -38,20 +37,9 @@ public class Inventory {
     @JoinColumn(name = "product_id")
     private Product product;
 
-    private int stock;
+    private int stock; //NPC 상품은 실제 수량, 부모 상품은 항상 1
 
     @CreationTimestamp
-    @Column(name = "created_at")
-    private LocalDateTime createdAt;
-
-    @UpdateTimestamp
-    @Column(name = "updated_at")
-    private LocalDateTime updatedAt;
-
-    public Inventory(UUID inventoryId, User user, Product product, Integer stock) {
-        this.inventoryId = inventoryId;
-        this.user = user;
-        this.product = product;
-        this.stock = stock;
-    }
+    @Column(name = "purchased_at")
+    private LocalDateTime purchasedAt;
 }

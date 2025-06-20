@@ -2,6 +2,7 @@ package com.popoworld.backend.market.config;
 
 import com.popoworld.backend.market.entity.Product;
 import com.popoworld.backend.market.entity.ProductLabel;
+import com.popoworld.backend.market.entity.ProductStatus;
 import com.popoworld.backend.market.repository.ProductRepository;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
@@ -26,15 +27,26 @@ public class NpcProductInitializer {
             log.info("NPC 상품 초기화 시작 ");
 
             //Arrays.asList() -> 배열을 List로 바꿔준다
-            List<Product>npcProducts = Arrays.asList(
-                    new Product(null,null,"당근",100,-1,"https://res.cloudinary.com/djmcg7zgu/image/upload/w_auto,f_auto,q_auto/v1749382424/carrot_i3xbjj",null,10, ProductLabel.SNACK),
-                    new Product(null, null, "물고기", 200, -1, "https://res.cloudinary.com/djmcg7zgu/image/upload/w_auto,f_auto,q_auto/v1749382424/fish_hqsqfs", null, 15,ProductLabel.SNACK),
-                    new Product(null, null, "빵", 150, -1, "https://res.cloudinary.com/djmcg7zgu/image/upload/w_auto,f_auto,q_auto/v1749382424/bread_nykeqe", null, 12,ProductLabel.SNACK),
-                    new Product(null, null, "사과", 80, -1, "https://res.cloudinary.com/djmcg7zgu/image/upload/w_auto,f_auto,q_auto/v1749382424/apple_dyzpm6", null, 8,ProductLabel.SNACK),
-                    new Product(null, null, "수박", 300, -1, "https://res.cloudinary.com/djmcg7zgu/image/upload/w_auto,f_auto,q_auto/v1749382424/watermelon_vrrndc", null, 20,ProductLabel.SNACK),
-                    new Product(null, null, "브로콜리", 120, -1, "https://res.cloudinary.com/djmcg7zgu/image/upload/w_auto,f_auto,q_auto/v1749382424/broccoli_nmpcqu", null, 14,ProductLabel.SNACK)
+            List<Product> npcProducts = Arrays.asList(
+                    new Product(null, null, "당근", 100, -1,
+                            "https://res.cloudinary.com/djmcg7zgu/image/upload/w_auto,f_auto,q_auto/v1749382424/carrot_i3xbjj",
+                            ProductStatus.REGISTERED, 10, ProductLabel.FOOD, null),
+                    new Product(null, null, "물고기", 200, -1,
+                            "https://res.cloudinary.com/djmcg7zgu/image/upload/w_auto,f_auto,q_auto/v1749382424/fish_hqsqfs",
+                            ProductStatus.REGISTERED, 15, ProductLabel.FOOD, null),
+                    new Product(null, null, "빵", 150, -1,
+                            "https://res.cloudinary.com/djmcg7zgu/image/upload/w_auto,f_auto,q_auto/v1749382424/bread_nykeqe",
+                            ProductStatus.REGISTERED, 12, ProductLabel.FOOD, null),
+                    new Product(null, null, "사과", 80, -1,
+                            "https://res.cloudinary.com/djmcg7zgu/image/upload/w_auto,f_auto,q_auto/v1749382424/apple_dyzpm6",
+                            ProductStatus.REGISTERED, 8, ProductLabel.FOOD, null),
+                    new Product(null, null, "수박", 300, -1,
+                            "https://res.cloudinary.com/djmcg7zgu/image/upload/w_auto,f_auto,q_auto/v1749382424/watermelon_vrrndc",
+                            ProductStatus.REGISTERED, 20, ProductLabel.FOOD, null),
+                    new Product(null, null, "브로콜리", 120, -1,
+                            "https://res.cloudinary.com/djmcg7zgu/image/upload/w_auto,f_auto,q_auto/v1749382424/broccoli_nmpcqu",
+                            ProductStatus.REGISTERED, 14, ProductLabel.FOOD, null)
             );
-
             productRepository.saveAll(npcProducts);
             log.info("NPC 상품 {}개 초기화 완료", npcProducts.size());
         }
