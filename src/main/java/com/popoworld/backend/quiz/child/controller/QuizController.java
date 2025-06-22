@@ -30,7 +30,7 @@ public class QuizController {
 
     @Operation(summary = "퀴즈 요청" , description = "퀴즈 요청 api")
     @GetMapping
-    public ResponseEntity<String> requestQuiz(
+    public ResponseEntity<?> requestQuiz(
             @RequestParam String difficulty,
             @RequestParam String topic
     ) {
@@ -39,7 +39,7 @@ public class QuizController {
 
         quizKafkaProducer.sendQuizRequest(requestId, userId, difficulty, topic);
 
-        return ResponseEntity.ok(requestId); // 프론트는 이 requestId로 추후 결과 요청
+        return ResponseEntity.ok("요청 성공");
     }
 
     @Operation(summary = "SSE 연결", description = "퀴즈 알림용 SSE 연결")
