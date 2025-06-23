@@ -42,6 +42,7 @@ public class AbstractSseEmitters {
         SseEmitter emitter = emitters.get(userId);
         if (emitter != null) {
             try {
+                log.info("{}", eventName);
                 emitter.send(SseEmitter.event()
                         .name(eventName)
                         .data("hi"));
