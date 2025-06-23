@@ -11,6 +11,7 @@ import com.popoworld.backend.quiz.child.service.QuizSseEmitters;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
@@ -20,6 +21,7 @@ import java.util.UUID;
 
 import static com.popoworld.backend.global.token.SecurityUtil.getCurrentUserId;
 
+@Slf4j
 @RestController
 @RequestMapping("/api/quiz")
 @RequiredArgsConstructor
@@ -54,7 +56,7 @@ public class QuizController {
         if (token == null || !token.startsWith("Bearer ")) {
             throw new AccessDeniedException("Missing or invalid token");
         }
-
+        log.info("연결 성공 연결 성공 연결 성공연결 성공연결 성공연결 성공연결 성공연결 성공연결 성공연결 성공연결 성공연결 성공연결 성공 ")
         UUID userId = UUID.fromString(jwtTokenProvider.getUserIdFromToken(token.substring(7)));
         return sseEmitters.create(userId);
     }
