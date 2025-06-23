@@ -56,7 +56,7 @@ public class QuizController {
         if (token == null || !token.startsWith("Bearer ")) {
             throw new AccessDeniedException("Missing or invalid token");
         }
-        log.info("연결 성공 연결 성공 연결 성공연결 성공연결 성공연결 성공연결 성공연결 성공연결 성공연결 성공연결 성공연결 성공연결 성공 ")
+        log.info("연결 성공 연결 성공 연결 성공연결 성공연결 성공연결 성공연결 성공연결 성공연결 성공연결 성공연결 성공연결 성공연결 성공 ");
         UUID userId = UUID.fromString(jwtTokenProvider.getUserIdFromToken(token.substring(7)));
         return sseEmitters.create(userId);
     }
