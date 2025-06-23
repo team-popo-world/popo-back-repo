@@ -49,4 +49,15 @@ public class AbstractSseEmitters {
             }
         }
     }
+
+    public void sendPingToAll() {
+        emitters.forEach((userId, emitter) -> {
+            try {
+                emitter.send(SseEmitter.event().name("ping").data("keep-alive"));
+            } catch (Exception e) {
+                emitter.completeWithError(e);
+                emitters.remove(userId);
+            }
+        });
+    }
 }
