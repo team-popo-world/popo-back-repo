@@ -24,6 +24,7 @@ public class SavingAccountHistory {
     private UUID id;
     @Field(targetType = FieldType.STRING)
     private UUID childId;
+    private UUID savingAccountId;
     private Integer accountPoint; //저축통장 포인트
     private Integer goalAmount; //목표 금액
     private Integer rewardPoint; //보상 포인트
