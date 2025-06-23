@@ -43,7 +43,7 @@ public class AbstractSseEmitters {
         if (emitter != null) {
             try {
                 emitter.send(SseEmitter.event()
-                        .name("quiz")
+//                        .name()
                         .data(data));
             } catch (Exception e) {
                 emitter.completeWithError(e);
