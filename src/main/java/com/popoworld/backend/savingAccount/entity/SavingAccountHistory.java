@@ -6,6 +6,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.mapping.Field;
+import org.springframework.data.mongodb.core.mapping.FieldType;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -18,7 +20,9 @@ import java.util.UUID;
 @Setter
 public class SavingAccountHistory {
     @Id
+    @Field(targetType = FieldType.STRING)
     private UUID id;
+    @Field(targetType = FieldType.STRING)
     private UUID childId;
     private UUID savingAccountId;
     private Integer accountPoint; //저축통장 포인트

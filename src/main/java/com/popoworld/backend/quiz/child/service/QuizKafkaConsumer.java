@@ -33,22 +33,26 @@ public class QuizKafkaConsumer {
 
             UUID userId = request.getUserId();
             String difficulty = request.getDifficulty();
+            String topic = request.getTopic();
 
             // 3. FastAPI 호출
-            String response = webClient.post()
-                    .uri("http://15.164.94.158:8001/quiz/{difficulty}", difficulty)
+            webClient.post()
+                    .uri("http://15.164.94.158:8001/quiz/{difficulty}/{topic}", difficulty, topic)
                     .retrieve()
                     .bodyToMono(String.class)
-                    .block();
+                    .subscribe(response -> {
+                        String redisKey = "quiz:" + userId;
+                        // 성공 시 Redis 저장
+                        redisTemplate.opsForValue().set(redisKey, response, Duration.ofMinutes(30));
+                        log.info("[퀴즈 생성 완료] Redis 저장됨: {}", redisKey);
 
-            String redisKey = "quiz:" + userId;
+                        // Kafka 응답 전송
+                        kafkaTemplate.send("quiz.response", userId.toString(), "updated");
 
-            // 2. Redis에 저장
-            redisTemplate.opsForValue().set(redisKey, response, Duration.ofMinutes(30));
-            log.info("[퀴즈 생성 완료] Redis 저장됨: {}", redisKey);
-
-            // 5. Kafka 응답 토픽에 메세지 보냄
-            kafkaTemplate.send("quiz.response", userId.toString(), "updated");
+                    }, error -> {
+                        // 예외 처리
+                        log.error("[퀴즈 생성 실패] FastAPI 호출 에러", error);
+                    });
         } catch (Exception e) {
             log.error("[퀴즈 생성 실패] Kafka 메시지 처리 중 오류 발생", e);
         }

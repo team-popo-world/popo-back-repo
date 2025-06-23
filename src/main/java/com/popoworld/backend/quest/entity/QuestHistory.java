@@ -7,6 +7,8 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.mapping.Field;
+import org.springframework.data.mongodb.core.mapping.FieldType;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -17,8 +19,11 @@ import java.util.UUID;
 @Document(collection = "quest_history")
 public class QuestHistory {
     @Id
+    @Field(targetType = FieldType.STRING)
     private UUID id;
+    @Field(targetType = FieldType.STRING)
     private UUID questId;
+    @Field(targetType = FieldType.STRING)
     private UUID childId;
     private String questType;
     private String questName;           // 퀘스트 이름

@@ -20,9 +20,11 @@ import java.util.UUID;
 public class InvestHistory {
 
     @Id
+    @Field(targetType = FieldType.STRING)
     private UUID id;
 
     @NotNull
+    @Field(targetType = FieldType.STRING)
     private UUID investSessionId; //게임 구분
 
     @NotNull

@@ -4,6 +4,7 @@ package com.popoworld.backend.quiz.child.entity;
 import jakarta.persistence.Id;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -20,6 +21,7 @@ import java.util.UUID;
 @AllArgsConstructor
 public class QuizHistory {
     @Id
+    @Field(targetType = FieldType.STRING)
     private UUID id;
 
     @NotNull
