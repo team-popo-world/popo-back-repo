@@ -3,6 +3,7 @@ package com.popoworld.backend.quiz.child.controller;
 import com.popoworld.backend.global.token.JwtTokenProvider;
 import com.popoworld.backend.invest.service.parent.ChatbotSseEmitters;
 import com.popoworld.backend.quiz.child.dto.QuizResultDTO;
+import com.popoworld.backend.quiz.child.dto.QuizRewardRequestDTO;
 import com.popoworld.backend.quiz.child.entity.QuizHistory;
 import com.popoworld.backend.quiz.child.service.QuizKafkaProducer;
 import com.popoworld.backend.quiz.child.service.QuizService;
@@ -66,6 +67,16 @@ public class QuizController {
         quizService.saveQuizResult(userId, request);
 
         return ResponseEntity.ok("저장 성공");
+    }
+
+    @Operation(summary = "퀴즈 보상 획득" , description = "퀴즈 결과 보상 획득 api")
+    @PostMapping("/point")
+    public ResponseEntity<Integer> getPoint(@RequestBody QuizRewardRequestDTO request) {
+        UUID userId = getCurrentUserId();
+
+        Integer userPoint = quizService.getPoint(userId, request);
+
+        return ResponseEntity.ok(userPoint);
     }
 
 
