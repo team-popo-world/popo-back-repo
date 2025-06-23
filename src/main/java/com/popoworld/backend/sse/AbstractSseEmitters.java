@@ -43,8 +43,8 @@ public class AbstractSseEmitters {
         if (emitter != null) {
             try {
                 emitter.send(SseEmitter.event()
-//                        .name()
-                        .data(data));
+                        .name(eventName)
+                        .data("hi"));
             } catch (Exception e) {
                 emitter.completeWithError(e);
                 log.warn("❗ emitter 없음! userId: {}", userId);
