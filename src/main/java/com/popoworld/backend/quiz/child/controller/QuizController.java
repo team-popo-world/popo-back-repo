@@ -30,7 +30,7 @@ public class QuizController {
     private final QuizService quizService;
     private final QuizKafkaProducer quizKafkaProducer;
     private final JwtTokenProvider jwtTokenProvider;
-    private final ChatbotSseEmitters sseEmitters;
+    private final QuizSseEmitters sseEmitters;
 
 
     @Operation(summary = "퀴즈 요청" , description = "퀴즈 요청 api" +

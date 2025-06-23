@@ -13,7 +13,5 @@ public class QuizSseEmitters extends AbstractSseEmitters {
         return super.create(userId);
     }
 
-    public void send(UUID userId, Object data) {
-        super.send(userId, data, "quiz");
-    }
+    public void send(UUID userId, Object data) { super.send(userId, data, "quiz"); }
 }
