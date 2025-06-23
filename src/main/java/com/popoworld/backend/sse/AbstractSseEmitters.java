@@ -45,7 +45,7 @@ public class AbstractSseEmitters {
                 log.info("{}", eventName);
                 emitter.send(SseEmitter.event()
                         .name(eventName)
-                        .data("hi"));
+                        .data(data));
             } catch (Exception e) {
                 emitter.completeWithError(e);
                 log.warn("❗ emitter 없음! userId: {}", userId);
