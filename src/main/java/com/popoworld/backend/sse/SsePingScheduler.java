@@ -17,6 +17,6 @@ public class SsePingScheduler {
     @Scheduled(fixedRate = 15_000)
     public void sendPing() {
         allEmitters.forEach(e -> e.sendPingToAll());
-        log.debug("🔄 SSE ping 전송 완료");
+        log.info("🔄 SSE ping 전송 완료 🔄 SSE ping 전송 완료🔄 SSE ping 전송 완료🔄 SSE ping 전송 완료🔄 SSE ping 전송 완료");
     }
 }
