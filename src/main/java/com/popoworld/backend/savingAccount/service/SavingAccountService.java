@@ -71,7 +71,7 @@ public class SavingAccountService {
             SavingAccount account = activeAccount.get();
 
             // 만료 체크
-            if (account.getEndDate().isBefore(LocalDate.now())) {
+            if (account.getEndDate().isBefore(LocalDate.now(ZoneId.of("Asia/Seoul")))) {
                 // 즉시 만료 처리
                 child.setPoint(child.getPoint() + account.getAccountPoint());
                 account.setActive(false);
@@ -145,7 +145,7 @@ public class SavingAccountService {
                 .orElseThrow(() -> new IllegalArgumentException("활성화된 저축 통장이 존재하지 않습니다."));
 
         // ✅ 마감일 체크 및 비활성화 처리 - 저축금만 돌려줌
-        if (savingAccount.getEndDate().isBefore(LocalDate.now())) {
+        if (savingAccount.getEndDate().isBefore(LocalDate.now(ZoneId.of("Asia/Seoul")))) {
             savingAccount.setActive(false);
             savingAccount.setSuccess(false);
             savingAccount.setCompletedAt(LocalDateTime.now(ZoneId.of("Asia/Seoul"))); // ✅ 완료 시점 저장

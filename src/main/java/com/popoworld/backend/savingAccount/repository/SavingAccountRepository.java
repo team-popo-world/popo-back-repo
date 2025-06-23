@@ -46,4 +46,10 @@ public interface SavingAccountRepository extends JpaRepository<SavingAccount,UUI
 
     // 기존 쿼리 삭제하고 이걸로 교체
     Optional<SavingAccount> findFirstByChildAndActiveFalseAndCompletedAtIsNotNullOrderByCompletedAtDesc(User child);
+    // 자녀의 모든 저축통장 조회 (최신순: 종료일 기준 내림차순)
+    List<SavingAccount> findAllByChildOrderByEndDateDesc(User child);
+
+    @Query("SELECT s FROM SavingAccount s WHERE s.child = :child " +
+            "ORDER BY s.active DESC, s.endDate DESC")
+    List<SavingAccount> findAllByChildOrderByActiveAndEndDate(@Param("child") User child);
 }

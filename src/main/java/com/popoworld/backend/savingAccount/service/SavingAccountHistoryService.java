@@ -28,6 +28,7 @@ public class SavingAccountHistoryService {
             SavingAccountHistory history = new SavingAccountHistory(
                     UUID.randomUUID(),                          // 1. id
                     savingAccount.getChild().getUserId(),       // 2. childId
+                    savingAccount.getSavingAccountId(),
                     savingAccount.getAccountPoint(),            // 3. accountPoint
                     savingAccount.getGoalAmount(),              // 4. goalAmount
                     savingAccount.getRewardPoint(),             // 5. rewardPoint
@@ -58,6 +59,7 @@ public class SavingAccountHistoryService {
             SavingAccountHistory history = new SavingAccountHistory(
                     UUID.randomUUID(),                          // 1. id
                     savingAccount.getChild().getUserId(),       // 2. childId
+                    savingAccount.getSavingAccountId(),
                     currentAccountPoint,                        // 3. accountPoint
                     savingAccount.getGoalAmount(),              // 4. goalAmount
                     savingAccount.getRewardPoint(),             // 5. rewardPoint
@@ -86,6 +88,7 @@ public class SavingAccountHistoryService {
             SavingAccountHistory history = new SavingAccountHistory(
                     UUID.randomUUID(),                          // 1. id
                     savingAccount.getChild().getUserId(),       // 2. childId
+                    savingAccount.getSavingAccountId(),
                     savingAccount.getAccountPoint(),            // 3. accountPoint
                     savingAccount.getGoalAmount(),              // 4. goalAmount
                     savingAccount.getRewardPoint(),             // 5. rewardPoint
@@ -116,6 +119,7 @@ public class SavingAccountHistoryService {
             SavingAccountHistory history = new SavingAccountHistory(
                     UUID.randomUUID(),                          // 1. id
                     savingAccount.getChild().getUserId(),       // 2. childId
+                    savingAccount.getSavingAccountId(),
                     savingAccount.getAccountPoint(),            // 3. accountPoint
                     savingAccount.getGoalAmount(),              // 4. goalAmount
                     savingAccount.getRewardPoint(),             // 5. rewardPoint
