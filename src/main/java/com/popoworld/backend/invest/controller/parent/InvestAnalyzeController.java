@@ -21,7 +21,7 @@ public class InvestAnalyzeController {
     private final InvestAnalyzeService investAnalyzeService;
 
     @Operation(summary = "그래프 요청", description = "그래프 요청 api")
-    @GetMapping("/{graph}")
+    @GetMapping("/{graph}/{range}")
     public Mono<ResponseEntity<Object>> getGraph(
             @PathVariable String graph,
             @PathVariable String range
