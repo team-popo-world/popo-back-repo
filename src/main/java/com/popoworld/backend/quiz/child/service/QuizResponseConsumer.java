@@ -30,7 +30,7 @@ public class QuizResponseConsumer {
         if (quizData != null) {
             log.info("[Quiz] 퀴즈 응답 Redis 조회 성공, SSE 전송");
             sseEmitters.send(userUUID, quizData);
-            log.info("[Quiz] 퀴즈 응답 Redis 조회 성공, SSE 전송성공");
+            log.info("[Quiz] 퀴즈 응답 Redis 조회 성공, SSE 전송성공 {}", quizData);
         } else {
             log.warn("[Quiz] Redis에 퀴즈 결과가 없음: {}", redisKey);
         }
