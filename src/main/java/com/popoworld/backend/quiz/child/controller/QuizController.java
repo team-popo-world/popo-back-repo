@@ -2,6 +2,8 @@ package com.popoworld.backend.quiz.child.controller;
 
 import com.popoworld.backend.global.token.JwtTokenProvider;
 import com.popoworld.backend.invest.service.parent.ChatbotSseEmitters;
+import com.popoworld.backend.quiz.child.dto.QuizResultDTO;
+import com.popoworld.backend.quiz.child.entity.QuizHistory;
 import com.popoworld.backend.quiz.child.service.QuizKafkaProducer;
 import com.popoworld.backend.quiz.child.service.QuizService;
 import com.popoworld.backend.quiz.child.service.QuizSseEmitters;
@@ -28,7 +30,9 @@ public class QuizController {
     private final ChatbotSseEmitters sseEmitters;
 
 
-    @Operation(summary = "퀴즈 요청" , description = "퀴즈 요청 api")
+    @Operation(summary = "퀴즈 요청" , description = "퀴즈 요청 api" +
+            "difficulty = easy/medium/hard" +
+            "topic = 한글 토픽 8개 중 하나")
     @GetMapping
     public ResponseEntity<?> requestQuiz(
             @RequestParam String difficulty,
@@ -52,6 +56,16 @@ public class QuizController {
 
         UUID userId = UUID.fromString(jwtTokenProvider.getUserIdFromToken(token.substring(7)));
         return sseEmitters.create(userId);
+    }
+
+    @Operation(summary = "퀴즈 결과 저장" , description = "퀴즈 결과 저장 api")
+    @PostMapping("/save")
+    public ResponseEntity<?> saveQuizResult(@RequestBody QuizResultDTO request) {
+        UUID userId = getCurrentUserId();
+
+        quizService.saveQuizResult(userId, request);
+
+        return ResponseEntity.ok("저장 성공");
     }
 
 
