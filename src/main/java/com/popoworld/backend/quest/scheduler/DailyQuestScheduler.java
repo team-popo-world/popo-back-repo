@@ -6,6 +6,7 @@ import com.popoworld.backend.quest.entity.Quest;
 import com.popoworld.backend.quest.enums.QuestLabel;
 import com.popoworld.backend.quest.enums.QuestState;
 import com.popoworld.backend.quest.repository.QuestRepository;
+import com.popoworld.backend.quest.service.QuestHistoryService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -26,6 +27,7 @@ public class DailyQuestScheduler {
 
     private final QuestRepository questRepository;
     private final UserRepository childRepository;
+    private final QuestHistoryService questHistoryService;
 
     /**
      * 매일 자정에 일일퀘스트만 리셋
@@ -50,6 +52,8 @@ public class DailyQuestScheduler {
             for (UUID childId : allChildren) {
                 List<Quest> newQuests = createDailyQuestsForChild(childId);
                 questRepository.saveAll(newQuests);
+                // 이렇게 수정해야 함
+                newQuests.forEach(quest -> questHistoryService.logQuest(quest));
                 totalCreated += newQuests.size();
                 log.info("✅ 아이 [{}]에게 일일퀘스트 {}개 생성", childId, newQuests.size());
             }

@@ -238,4 +238,5 @@ public class SavingAccountService {
                 savingAccount.getAccountPoint() - request.getDepositPoint(),
                 savingAccount.getAccountPoint());
     }
+
 }
