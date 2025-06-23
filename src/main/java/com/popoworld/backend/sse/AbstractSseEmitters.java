@@ -1,11 +1,13 @@
 package com.popoworld.backend.sse;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
+@Slf4j
 public class AbstractSseEmitters {
 
     private final Map<UUID, SseEmitter> emitters = new ConcurrentHashMap<>();
@@ -41,10 +43,11 @@ public class AbstractSseEmitters {
         if (emitter != null) {
             try {
                 emitter.send(SseEmitter.event()
-                        .name(eventName)
+                        .name("quiz")
                         .data(data));
             } catch (Exception e) {
                 emitter.completeWithError(e);
+                log.warn("❗ emitter 없음! userId: {}", userId);
                 emitters.remove(userId);
             }
         }
