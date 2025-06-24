@@ -13,6 +13,7 @@ public class SavingAccountScheduler {
     private final SavingAccountService savingAccountService;
 
     // 매일 자정에 만료된 저축통장 비활성화
+
     @Scheduled(cron = "0 0 0 * * *", zone = "Asia/Seoul")
     public void deactivateExpiredAccounts() {
         log.info("🏦 만료된 저축통장 비활성화 작업 시작");
