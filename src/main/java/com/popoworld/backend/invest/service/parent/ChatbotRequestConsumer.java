@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.popoworld.backend.invest.dto.parent.dto.kafka.ChatKafkaPayload;
 import com.popoworld.backend.invest.dto.parent.dto.request.ChatbotStoryRequestDTO;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.core.KafkaTemplate;
@@ -17,6 +18,7 @@ import org.springframework.web.reactive.function.client.WebClient;
 import java.time.Duration;
 import java.util.UUID;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class ChatbotRequestConsumer {
@@ -46,17 +48,20 @@ public class ChatbotRequestConsumer {
                 .build();
 
         // 3. FastAPI 호출
-        String response = webClient.post()
+        webClient.post()
                 .uri("http://15.164.94.158:8000/edit-scenario")
                 .bodyValue(apiRequest)
                 .retrieve()
                 .bodyToMono(String.class)
-                .block();
+                .subscribe(response -> {
+                    // 4. Redis에 임시 저장 (30분 유지)
+                    redisTemplate.opsForValue().set(redisKey, response, Duration.ofMinutes(30));
 
-        // 4. Redis에 임시 저장 (30분 유지)
-        redisTemplate.opsForValue().set(redisKey, response, Duration.ofMinutes(30));
-
-        // 5. Kafka 응답 토픽에 메세지 보냄
-        kafkaTemplate.send("chatbot.response", userId.toString(), "updated");
+                    // 5. Kafka 응답 토픽에 메시지 전송
+                    kafkaTemplate.send("chatbot.response", userId.toString(), "updated");
+                }, error -> {
+                    // 에러 핸들링
+                    log.error("❗ FastAPI 호출 실패: {}", error.getMessage());
+                });
     }
 }
