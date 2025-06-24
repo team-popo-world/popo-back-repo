@@ -14,7 +14,7 @@ import static com.popoworld.backend.global.token.SecurityUtil.getCurrentUserId;
 
 @RequiredArgsConstructor
 @RestController
-@RequestMapping("/api/graph")
+@RequestMapping("/api/invest")
 @Tag(name = "Analyze", description = "투자 분석 그래프 api")
 public class InvestAnalyzeController {
 
@@ -33,7 +33,6 @@ public class InvestAnalyzeController {
     }
 
     private String resolvePath(String graph, String range) {
-        String path = graph.replace("-", "/");
-        return "/" + path + "/" + range;
+        return "/" + graph + "/" + range;
     }
 }

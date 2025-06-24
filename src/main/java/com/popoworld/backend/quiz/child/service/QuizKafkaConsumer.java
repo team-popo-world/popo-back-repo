@@ -1,5 +1,7 @@
 package com.popoworld.backend.quiz.child.service;
 
+import com.fasterxml.jackson.core.JacksonException;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.popoworld.backend.quiz.child.dto.QuizRequestPayload;
 import lombok.RequiredArgsConstructor;
@@ -27,8 +29,7 @@ public class QuizKafkaConsumer {
     private final KafkaTemplate<String, String> kafkaTemplate;
 
     @KafkaListener(topics = "quiz.request", groupId = "quiz-worker-group")
-    public void onQuizRequest(@Payload String messageJson) {
-        try {
+    public void onQuizRequest(@Payload String messageJson) throws JsonProcessingException {
             QuizRequestPayload request = objectMapper.readValue(messageJson, QuizRequestPayload.class);
 
             UUID userId = request.getUserId();
@@ -53,8 +54,5 @@ public class QuizKafkaConsumer {
                         // 예외 처리
                         log.error("[퀴즈 생성 실패] FastAPI 호출 에러", error);
                     });
-        } catch (Exception e) {
-            log.error("[퀴즈 생성 실패] Kafka 메시지 처리 중 오류 발생", e);
-        }
     }
 }

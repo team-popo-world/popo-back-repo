@@ -13,7 +13,14 @@ public class InvestAnalyzeService {
 
     public Mono<Object> getGraph(String path, String userId) {
         return webClient.get()
-                .uri("url" + "/api/graph" + path + "?userId=" + userId)
+                .uri(uriBuilder -> uriBuilder
+                        .scheme("http")
+                        .host("43.203.175.63")
+                        .port(8002)
+                        .path("/api/invest" + path)
+                        .queryParam("userId", userId)
+                        .build()
+                )
                 .retrieve()
                 .bodyToMono(Object.class);
     }
