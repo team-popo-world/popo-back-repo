@@ -5,7 +5,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.web.client.RestTemplate;
 
 @Configuration
-public class AnalyticsConfig {
+public class QuestAnalyticsConfig {
 
     @Bean // <- Spring Container에 Restemplate 객체를 등록
     public RestTemplate restTemplate(){

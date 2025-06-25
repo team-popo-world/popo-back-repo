@@ -1,7 +1,7 @@
 package com.popoworld.backend.quest.analytics.controller;
 
 import com.popoworld.backend.quest.analytics.client.QuestApiClient;
-import com.popoworld.backend.quest.analytics.service.AnalyticsService;
+import com.popoworld.backend.quest.analytics.service.QuestAnalyticsService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -27,10 +27,10 @@ import static com.popoworld.backend.global.token.SecurityUtil.getCurrentUserId;
 @RestController
 @RequestMapping("/api/questAnalytics")
 @Tag(name = "퀘스트 분석 API", description = "부모가 자녀의 퀘스트 수행 패턴을 분석할 수 있는 ML 기반 분석 데이터 제공")
-@SecurityRequirement(name = "bearerAuth")
-public class AnalyticsController {
+@SecurityRequirement(name = "accessToken")
+public class QuestAnalyticsController {
 
-    private final AnalyticsService analyticsService;
+    private final QuestAnalyticsService analyticsService;
     private final QuestApiClient questApiClient;
 
     @GetMapping("/daily/completion-rate")
