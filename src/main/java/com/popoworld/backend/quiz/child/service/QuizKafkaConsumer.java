@@ -44,7 +44,7 @@ public class QuizKafkaConsumer {
                     .subscribe(response -> {
                         String redisKey = "quiz:" + userId;
                         // 성공 시 Redis 저장
-                        redisTemplate.opsForValue().set(redisKey, response, Duration.ofMinutes(30));
+                        redisTemplate.opsForValue().set(redisKey, response, Duration.ofMinutes(5));
                         log.info("[퀴즈 생성 완료] Redis 저장됨: {}", redisKey);
 
                         // Kafka 응답 전송
