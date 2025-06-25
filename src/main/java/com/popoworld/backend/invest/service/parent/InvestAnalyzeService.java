@@ -4,6 +4,7 @@ import com.popoworld.backend.User.User;
 import com.popoworld.backend.User.repository.UserRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.crossstore.ChangeSetPersister;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -12,6 +13,7 @@ import reactor.core.publisher.Mono;
 import java.nio.file.AccessDeniedException;
 import java.util.UUID;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class InvestAnalyzeService {
@@ -35,7 +37,7 @@ public class InvestAnalyzeService {
         return webClient.get()
                 .uri(uriBuilder -> uriBuilder
                         .scheme("http")
-                        .host("43.203.175.63")
+                        .host("43.203.175.69")
                         .port(8002)
                         .path("/api/invest" + path)
                         .queryParam("userId", childId.toString())

@@ -7,7 +7,6 @@ import com.popoworld.backend.quiz.child.dto.QuizRewardRequestDTO;
 import com.popoworld.backend.quiz.child.entity.QuizHistory;
 import com.popoworld.backend.quiz.child.service.QuizKafkaProducer;
 import com.popoworld.backend.quiz.child.service.QuizService;
-import com.popoworld.backend.quiz.child.service.QuizSseEmitters;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
@@ -29,8 +28,7 @@ public class QuizController {
 
     private final QuizService quizService;
     private final QuizKafkaProducer quizKafkaProducer;
-    private final JwtTokenProvider jwtTokenProvider;
-    private final QuizSseEmitters sseEmitters;
+//    private final QuizSseEmitters sseEmitters;
 
 
     @Operation(summary = "퀴즈 요청" , description = "퀴즈 요청 api" +
@@ -41,25 +39,24 @@ public class QuizController {
             @RequestParam String difficulty,
             @RequestParam String topic
     ) {
-        String requestId = UUID.randomUUID().toString();
         UUID userId = getCurrentUserId();
 
-        quizKafkaProducer.sendQuizRequest(requestId, userId, difficulty, topic);
+        quizKafkaProducer.sendQuizRequest(userId, difficulty, topic);
 
         return ResponseEntity.ok("요청 성공");
     }
 
-    @Operation(summary = "SSE 연결", description = "퀴즈 알림용 SSE 연결")
-    @GetMapping("/sse")
-    public SseEmitter connect(HttpServletRequest request) throws AccessDeniedException {
-        String token = request.getHeader("Authorization");
-        if (token == null || !token.startsWith("Bearer ")) {
-            throw new AccessDeniedException("Missing or invalid token");
-        }
-        log.info("연결 성공 연결 성공 연결 성공연결 성공연결 성공연결 성공연결 성공연결 성공연결 성공연결 성공연결 성공연결 성공연결 성공 ");
-        UUID userId = UUID.fromString(jwtTokenProvider.getUserIdFromToken(token.substring(7)));
-        return sseEmitters.create(userId);
-    }
+//    @Operation(summary = "SSE 연결", description = "퀴즈 알림용 SSE 연결")
+//    @GetMapping("/sse")
+//    public SseEmitter connect(HttpServletRequest request) throws AccessDeniedException {
+//        String token = request.getHeader("Authorization");
+//        if (token == null || !token.startsWith("Bearer ")) {
+//            throw new AccessDeniedException("Missing or invalid token");
+//        }
+//        log.info("연결 성공 연결 성공 연결 성공연결 성공연결 성공연결 성공연결 성공연결 성공연결 성공연결 성공연결 성공연결 성공연결 성공 ");
+//        UUID userId = UUID.fromString(jwtTokenProvider.getUserIdFromToken(token.substring(7)));
+//        return sseEmitters.create(userId);
+//    }
 
     @Operation(summary = "퀴즈 결과 저장" , description = "퀴즈 결과 저장 api")
     @PostMapping("/save")
