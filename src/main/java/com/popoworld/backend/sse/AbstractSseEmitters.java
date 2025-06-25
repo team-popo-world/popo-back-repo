@@ -1,5 +1,6 @@
 package com.popoworld.backend.sse;
 
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
@@ -46,6 +47,9 @@ public class AbstractSseEmitters {
                 emitter.send(SseEmitter.event()
                         .name(eventName)
                         .data(data));
+                if (eventName.equals("quiz")) {
+                    emitters.remove(userId);
+                }
             } catch (Exception e) {
                 emitter.completeWithError(e);
                 log.warn("❗ emitter 없음! userId: {}", userId);
