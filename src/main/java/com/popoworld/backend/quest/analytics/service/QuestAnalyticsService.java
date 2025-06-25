@@ -13,7 +13,7 @@ import java.util.UUID;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class AnalyticsService {
+public class QuestAnalyticsService {
     private final UserRepository userRepository;
 
     //권한 검증 메서드
