@@ -1,6 +1,5 @@
 package com.popoworld.backend.quiz.child.entity;
 
-import com.popoworld.backend.quest.enums.QuestLabel;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -25,11 +24,10 @@ public class Quiz {
 
     private String topic;
 
-    @Lob
     @Column(columnDefinition = "TEXT")
     private String questionJson; // JSON 전체를 문자열로 저장
 
-    public static Quiz createDailyQuest(UUID childId, String difficulty, String topic, String questionJson) {
+    public static Quiz createDefaultQuiz(UUID childId, String difficulty, String topic, String questionJson) {
         return Quiz.builder()
                 .id(UUID.randomUUID())
                 .userId(childId)
