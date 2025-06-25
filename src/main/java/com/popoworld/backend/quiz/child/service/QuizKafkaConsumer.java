@@ -4,6 +4,8 @@ import com.fasterxml.jackson.core.JacksonException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.popoworld.backend.quiz.child.dto.QuizRequestPayload;
+import com.popoworld.backend.quiz.child.entity.Quiz;
+import com.popoworld.backend.quiz.child.repository.QuizDataRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -16,6 +18,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
 
 import java.time.Duration;
+import java.util.Optional;
 import java.util.UUID;
 
 @Slf4j
@@ -27,6 +30,7 @@ public class QuizKafkaConsumer {
     private final ObjectMapper objectMapper;
     private final RedisTemplate<String, String> redisTemplate;
     private final KafkaTemplate<String, String> kafkaTemplate;
+    private final QuizDataRepository quizDataRepository;
 
     @KafkaListener(topics = "quiz.request", groupId = "quiz-worker-group")
     public void onQuizRequest(@Payload String messageJson) throws JsonProcessingException {
@@ -38,20 +42,24 @@ public class QuizKafkaConsumer {
 
             // 3. FastAPI 호출
             webClient.post()
-                    .uri("http://15.164.94.158:8001/quiz/{difficulty}/{topic}", difficulty, topic)
+                    .uri("http://43.203.175.69:8003/quiz/{difficulty}/{topic}", difficulty, topic)
                     .retrieve()
                     .bodyToMono(String.class)
                     .subscribe(response -> {
-                        String redisKey = "quiz:" + userId;
-                        // 성공 시 Redis 저장
-                        redisTemplate.opsForValue().set(redisKey, response, Duration.ofMinutes(5));
-                        log.info("[퀴즈 생성 완료] Redis 저장됨: {}", redisKey);
-
-                        // Kafka 응답 전송
-                        kafkaTemplate.send("quiz.response", userId.toString(), "updated");
-
+                        quizDataRepository.findByUserIdAndDifficultyAndTopic(userId, difficulty, topic)
+                                .ifPresentOrElse(q -> {
+                                    q.setQuestionJson(response);
+                                    quizDataRepository.save(q);
+                                }, () -> {
+                                    Quiz newQuiz = Quiz.builder()
+                                            .userId(userId)
+                                            .difficulty(difficulty)
+                                            .topic(topic)
+                                            .questionJson(response)
+                                            .build();
+                                    quizDataRepository.save(newQuiz);
+                                });
                     }, error -> {
-                        // 예외 처리
                         log.error("[퀴즈 생성 실패] FastAPI 호출 에러", error);
                     });
     }

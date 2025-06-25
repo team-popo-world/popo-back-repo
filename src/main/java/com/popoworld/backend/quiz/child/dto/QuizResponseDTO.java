@@ -10,6 +10,5 @@ import java.util.List;
 @AllArgsConstructor
 @Builder
 public class QuizResponseDTO {
-    private String difficulty;
-    private List<QuizItemDTO> quizList;
+    private String questionJson;
 }
