@@ -2,8 +2,10 @@ package com.popoworld.backend.quiz.child.controller;
 
 import com.popoworld.backend.global.token.JwtTokenProvider;
 import com.popoworld.backend.invest.service.parent.ChatbotSseEmitters;
+import com.popoworld.backend.quiz.child.dto.QuizResponseDTO;
 import com.popoworld.backend.quiz.child.dto.QuizResultDTO;
 import com.popoworld.backend.quiz.child.dto.QuizRewardRequestDTO;
+import com.popoworld.backend.quiz.child.entity.Quiz;
 import com.popoworld.backend.quiz.child.entity.QuizHistory;
 import com.popoworld.backend.quiz.child.service.QuizKafkaProducer;
 import com.popoworld.backend.quiz.child.service.QuizService;
@@ -35,15 +37,15 @@ public class QuizController {
             "difficulty = easy/medium/hard" +
             "topic = 한글 토픽 8개 중 하나")
     @GetMapping
-    public ResponseEntity<?> requestQuiz(
+    public ResponseEntity<QuizResponseDTO> requestQuiz(
             @RequestParam String difficulty,
             @RequestParam String topic
     ) {
         UUID userId = getCurrentUserId();
 
-        quizKafkaProducer.sendQuizRequest(userId, difficulty, topic);
+        QuizResponseDTO response = quizKafkaProducer.sendQuizRequest(userId, difficulty, topic);
 
-        return ResponseEntity.ok("요청 성공");
+        return ResponseEntity.ok(response);
     }
 
 //    @Operation(summary = "SSE 연결", description = "퀴즈 알림용 SSE 연결")
