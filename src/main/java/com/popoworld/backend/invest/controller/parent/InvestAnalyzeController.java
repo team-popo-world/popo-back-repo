@@ -21,15 +21,17 @@ public class InvestAnalyzeController {
     private final InvestAnalyzeService investAnalyzeService;
 
     @Operation(summary = "그래프 요청", description = "그래프 요청 api")
-    @GetMapping("/{graph}/{range}")
+    @PostMapping("/{graph}/{range}")
     public Mono<ResponseEntity<Object>> getGraph(
             @PathVariable String graph,
-            @PathVariable String range
+            @PathVariable String range,
+            @RequestBody UUID userId
     ) {
-        UUID userId = getCurrentUserId();
+        UUID parentId = getCurrentUserId();
+        UUID childId = userId;
 
         String path = resolvePath(graph, range);
-        return investAnalyzeService.getGraph(path, userId.toString()).map(ResponseEntity::ok);
+        return investAnalyzeService.getGraph(path, parentId, childId).map(ResponseEntity::ok);
     }
 
     private String resolvePath(String graph, String range) {
