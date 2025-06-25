@@ -19,8 +19,6 @@ public class Quiz {
     @Id
     private UUID id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "child_id")
     private UUID userId; //사용자 구분
 
     private String difficulty; // easy, medium, hard
@@ -32,7 +30,7 @@ public class Quiz {
     private String questionJson; // JSON 전체를 문자열로 저장
 
     public static Quiz createDailyQuest(UUID childId, String difficulty, String topic, String questionJson) {
-        Quiz.builder()
+        return Quiz.builder()
                 .id(UUID.randomUUID())
                 .userId(childId)
                 .difficulty(difficulty)
