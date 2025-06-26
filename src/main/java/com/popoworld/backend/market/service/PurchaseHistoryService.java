@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.util.TimeZone;
 import java.util.UUID;
 
 @Slf4j
@@ -41,6 +42,7 @@ public class PurchaseHistoryService {
             ObjectMapper mapper = new ObjectMapper();
             mapper.registerModule(new JavaTimeModule());
             mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS); // 🔥 날짜 배열 형태 방지
+            mapper.setTimeZone(TimeZone.getTimeZone("Asia/Seoul"));
 
             String message = mapper.writeValueAsString(history);
             purchaseHistoryKafkaProducer.sendPurchaseHistory("purchase-history", message);
