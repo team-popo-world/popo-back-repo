@@ -111,11 +111,11 @@ public class DailyQuestScheduler {
         List<Quest> dailyQuests = new ArrayList<>();
 
         // 🔥 일일 퀘스트에 적절한 라벨 추가
-        dailyQuests.add(Quest.createDailyQuest(childId, "양치하기", "밥 먹었으면 포포와 양치하자!", 100, QuestLabel.HABIT));
-        dailyQuests.add(Quest.createDailyQuest(childId, "장난감 정리하기", "가지고 온 장난감은 스스로 치워볼까?", 100, QuestLabel.HOUSEHOLD));
-        dailyQuests.add(Quest.createDailyQuest(childId, "이불 개기", "일어나면 이불을 예쁘게 개자!", 100, QuestLabel.HABIT));
-        dailyQuests.add(Quest.createDailyQuest(childId, "식탁 정리 도와주기", "먹고 난 그릇, 포포랑 정리해보자!", 100, QuestLabel.HOUSEHOLD));
-        dailyQuests.add(Quest.createDailyQuest(childId, "하루 이야기 나누기", "오늘 어땠는지 부모님과 얘기해보자!", 100, QuestLabel.HABIT));
+        dailyQuests.add(Quest.createDailyQuest(childId, "양치하기", "밥 먹었으면 포포와 양치하자!", 100, QuestLabel.HABIT,"https://res.cloudinary.com/dgmbxvpv9/image/upload/v1749544757/quest-daily-1_j4yvn5.webp"));
+        dailyQuests.add(Quest.createDailyQuest(childId, "장난감 정리하기", "가지고 온 장난감은 스스로 치워볼까?", 100, QuestLabel.HOUSEHOLD,null));
+        dailyQuests.add(Quest.createDailyQuest(childId, "이불 개기", "일어나면 이불을 예쁘게 개자!", 100, QuestLabel.HABIT,"https://res.cloudinary.com/dgmbxvpv9/image/upload/v1749545118/quest-daily-3_ck3ce5.webp"));
+        dailyQuests.add(Quest.createDailyQuest(childId, "식탁 정리 도와주기", "먹고 난 그릇, 포포랑 정리해보자!", 100, QuestLabel.HOUSEHOLD,null));
+        dailyQuests.add(Quest.createDailyQuest(childId, "하루 이야기 나누기", "오늘 어땠는지 부모님과 얘기해보자!", 100, QuestLabel.HABIT,null));
 
         return dailyQuests;
     }
