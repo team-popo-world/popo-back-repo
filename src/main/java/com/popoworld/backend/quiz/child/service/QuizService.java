@@ -59,30 +59,30 @@ public class QuizService {
 
     private List<Quiz> createDefaultQuizList(UUID childId) {
         List<Quiz> dailyQuiz = new ArrayList<>();
-        dailyQuiz.add(Quiz.createDefaultQuiz(childId, "easy", "물가", QuizJson.aEasy));
-        dailyQuiz.add(Quiz.createDefaultQuiz(childId, "medium", "물가", QuizJson.aMedium));
-        dailyQuiz.add(Quiz.createDefaultQuiz(childId, "hard", "물가", QuizJson.aHard));
-        dailyQuiz.add(Quiz.createDefaultQuiz(childId, "easy", "소비", QuizJson.bEasy));
-        dailyQuiz.add(Quiz.createDefaultQuiz(childId, "medium", "소비", QuizJson.bMedium));
-        dailyQuiz.add(Quiz.createDefaultQuiz(childId, "hard", "소비", QuizJson.bHard));
-        dailyQuiz.add(Quiz.createDefaultQuiz(childId, "easy", "시장", QuizJson.cEasy));
-        dailyQuiz.add(Quiz.createDefaultQuiz(childId, "medium", "시장", QuizJson.cMedium));
-        dailyQuiz.add(Quiz.createDefaultQuiz(childId, "hard", "시장", QuizJson.cHard));
-        dailyQuiz.add(Quiz.createDefaultQuiz(childId, "easy", "용돈", QuizJson.dEasy));
-        dailyQuiz.add(Quiz.createDefaultQuiz(childId, "medium", "용돈", QuizJson.dMedium));
-        dailyQuiz.add(Quiz.createDefaultQuiz(childId, "hard", "용돈", QuizJson.dHard));
+        dailyQuiz.add(Quiz.createDefaultQuiz(childId, "easy", "용돈", QuizJson.aEasy));
+        dailyQuiz.add(Quiz.createDefaultQuiz(childId, "medium", "용돈", QuizJson.aMedium));
+        dailyQuiz.add(Quiz.createDefaultQuiz(childId, "hard", "용돈", QuizJson.aHard));
+        dailyQuiz.add(Quiz.createDefaultQuiz(childId, "easy", "저축", QuizJson.bEasy));
+        dailyQuiz.add(Quiz.createDefaultQuiz(childId, "medium", "저축", QuizJson.bMedium));
+        dailyQuiz.add(Quiz.createDefaultQuiz(childId, "hard", "저축", QuizJson.bHard));
+        dailyQuiz.add(Quiz.createDefaultQuiz(childId, "easy", "소비", QuizJson.cEasy));
+        dailyQuiz.add(Quiz.createDefaultQuiz(childId, "medium", "소비", QuizJson.cMedium));
+        dailyQuiz.add(Quiz.createDefaultQuiz(childId, "hard", "소비", QuizJson.cHard));
+        dailyQuiz.add(Quiz.createDefaultQuiz(childId, "easy", "투자", QuizJson.dEasy));
+        dailyQuiz.add(Quiz.createDefaultQuiz(childId, "medium", "투자", QuizJson.dMedium));
+        dailyQuiz.add(Quiz.createDefaultQuiz(childId, "hard", "투자", QuizJson.dHard));
         dailyQuiz.add(Quiz.createDefaultQuiz(childId, "easy", "은행", QuizJson.eEasy));
         dailyQuiz.add(Quiz.createDefaultQuiz(childId, "medium", "은행", QuizJson.eMedium));
         dailyQuiz.add(Quiz.createDefaultQuiz(childId, "hard", "은행", QuizJson.eHard));
-        dailyQuiz.add(Quiz.createDefaultQuiz(childId, "easy", "저축", QuizJson.fEasy));
-        dailyQuiz.add(Quiz.createDefaultQuiz(childId, "medium", "저축", QuizJson.fMedium));
-        dailyQuiz.add(Quiz.createDefaultQuiz(childId, "hard", "저축", QuizJson.fHard));
-        dailyQuiz.add(Quiz.createDefaultQuiz(childId, "easy", "투자", QuizJson.gEasy));
-        dailyQuiz.add(Quiz.createDefaultQuiz(childId, "medium", "투자", QuizJson.gMedium));
-        dailyQuiz.add(Quiz.createDefaultQuiz(childId, "hard", "투자", QuizJson.gHard));
-        dailyQuiz.add(Quiz.createDefaultQuiz(childId, "easy", "화폐", QuizJson.hEasy));
-        dailyQuiz.add(Quiz.createDefaultQuiz(childId, "medium", "화폐", QuizJson.hMedium));
-        dailyQuiz.add(Quiz.createDefaultQuiz(childId, "hard", "화폐", QuizJson.hHard));
+        dailyQuiz.add(Quiz.createDefaultQuiz(childId, "easy", "화폐", QuizJson.fEasy));
+        dailyQuiz.add(Quiz.createDefaultQuiz(childId, "medium", "화폐", QuizJson.fMedium));
+        dailyQuiz.add(Quiz.createDefaultQuiz(childId, "hard", "화폐", QuizJson.fHard));
+        dailyQuiz.add(Quiz.createDefaultQuiz(childId, "easy", "물가", QuizJson.gEasy));
+        dailyQuiz.add(Quiz.createDefaultQuiz(childId, "medium", "물가", QuizJson.gMedium));
+        dailyQuiz.add(Quiz.createDefaultQuiz(childId, "hard", "물가", QuizJson.gHard));
+        dailyQuiz.add(Quiz.createDefaultQuiz(childId, "easy", "시장", QuizJson.hEasy));
+        dailyQuiz.add(Quiz.createDefaultQuiz(childId, "medium", "시장", QuizJson.hMedium));
+        dailyQuiz.add(Quiz.createDefaultQuiz(childId, "hard", "시장", QuizJson.hHard));
         return dailyQuiz;
     }
 
