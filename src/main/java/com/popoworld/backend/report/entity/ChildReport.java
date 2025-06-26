@@ -1,4 +1,4 @@
-package com.popoworld.backend.report.Entity;
+package com.popoworld.backend.report.entity;
 
 import jakarta.persistence.Id;
 import lombok.*;

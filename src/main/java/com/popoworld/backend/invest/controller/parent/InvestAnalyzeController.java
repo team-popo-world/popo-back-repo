@@ -30,10 +30,15 @@ public class InvestAnalyzeController {
     ) {
         UUID parentId = getCurrentUserId();
         UUID childId = userId;
-
+        long start = System.currentTimeMillis();
+        log.info("그래프 요청 시작 그래프 요청 시작그래프 요청 시작그래프 요청 시작그래프 요청 시작그래프 요청 시작그래프 요청 시작그래프 요청 시작그래프 요청 시작그래프 요청 시작그래프 요청 시작그래프 요청 시작그래프 요청 시작 {}", start);
         String path = resolvePath(graph, range);
         // 1. WebClient block 처리
         Object result = investAnalyzeService.getGraph(path, parentId, childId).block();
+        long end = System.currentTimeMillis();
+
+        log.info(" fastapi 반환 완료fastapi 반환 완료fastapi 반환 완료fastapi 반환 완료fastapi 반환 완료fastapi 반환 완료fastapi 반환 완료fastapi 반환 완료fastapi 반환 완료fastapi 반환 완료fastapi 반환 완료 {}", end);
+
         return ResponseEntity.ok(result);
 
     }
