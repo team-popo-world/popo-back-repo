@@ -10,5 +10,6 @@ import lombok.NoArgsConstructor;
 public class DefaultScenarioRequest {
     private String chapterId;
     private String story;
+    private String summary;
     private Boolean isCustom;
 }

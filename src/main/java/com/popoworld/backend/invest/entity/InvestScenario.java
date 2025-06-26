@@ -23,10 +23,15 @@ public class InvestScenario {
 
     private UUID childId;
 
+    @Column(name = "scenario_name")
+    private String scenarioName;
+
 //    private UUID chapterId;
 
     @Column(columnDefinition = "TEXT")
     private String story;
+
+    private String summary;
 
     private Boolean isCustom; //부모가 만든건지
 

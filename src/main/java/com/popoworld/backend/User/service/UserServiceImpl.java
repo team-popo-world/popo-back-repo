@@ -10,6 +10,7 @@ import com.popoworld.backend.global.token.JwtTokenProvider;
 import com.popoworld.backend.global.token.RefreshToken;
 import com.popoworld.backend.quest.repository.QuestRepository;
 import com.popoworld.backend.quest.service.QuestService;
+import com.popoworld.backend.quiz.child.service.QuizService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -32,6 +33,7 @@ public class UserServiceImpl implements UserService {
     private final JwtTokenProvider jwtTokenProvider;
     private final QuestService questService;
     private final StringRedisTemplate redisTemplate;
+    private final QuizService quizService;
     private final Duration TTL = Duration.ofDays(7); // 7일 TTL
 
     // 공통로직
@@ -75,6 +77,7 @@ public class UserServiceImpl implements UserService {
 
         if ("Child".equalsIgnoreCase(user.getRole())) {
             questService.createDailyQuestsForNewChild(user.getUserId());
+            quizService.createDefaultQuiz(user.getUserId());
         }
     }
 

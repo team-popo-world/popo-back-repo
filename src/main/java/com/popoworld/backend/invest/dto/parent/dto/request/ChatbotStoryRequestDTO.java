@@ -12,5 +12,6 @@ import java.util.UUID;
 public class ChatbotStoryRequestDTO {
     private String chapterId;
     private String story;
+    private String summary;
     private String editRequest;
 }

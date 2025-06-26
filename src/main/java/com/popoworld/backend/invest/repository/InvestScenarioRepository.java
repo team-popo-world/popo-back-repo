@@ -4,9 +4,11 @@ import com.popoworld.backend.invest.entity.InvestScenario;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Repository
@@ -30,4 +32,8 @@ public interface InvestScenarioRepository extends JpaRepository<InvestScenario, 
 
     //페이징 조회
     Page<InvestScenario> findByChildIdAndInvestChapter_ChapterId(UUID childId, String chapterId, Pageable pageable);
+
+    @Query("SELECT s.scenarioName FROM InvestScenario s WHERE s.scenarioName LIKE '기본-%' ORDER BY s.scenarioName DESC LIMIT 1")
+    Optional<String> findLastScenarioName();
+
 }
