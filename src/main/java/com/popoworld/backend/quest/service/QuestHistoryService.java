@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.util.TimeZone;
 import java.util.UUID;
 
 @Service
@@ -37,6 +38,7 @@ public class QuestHistoryService {
 
             ObjectMapper mapper = new ObjectMapper();
             mapper.registerModule(new JavaTimeModule());
+            mapper.setTimeZone(TimeZone.getTimeZone("Asia/Seoul"));
             String json = mapper.writeValueAsString(history);
 
             questHistoryKafkaProducer.sendQuestHistory("quest-history", json);
