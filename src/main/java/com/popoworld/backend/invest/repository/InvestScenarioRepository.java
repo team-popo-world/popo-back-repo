@@ -33,6 +33,7 @@ public interface InvestScenarioRepository extends JpaRepository<InvestScenario, 
     //페이징 조회
     Page<InvestScenario> findByChildIdAndInvestChapter_ChapterId(UUID childId, String chapterId, Pageable pageable);
 
-    @Query("SELECT s.name FROM InvestScenario s WHERE s.name LIKE '기본-%' ORDER BY s.name DESC LIMIT 1")
+    @Query("SELECT s.scenarioName FROM InvestScenario s WHERE s.scenarioName LIKE '기본-%' ORDER BY s.scenarioName DESC LIMIT 1")
     Optional<String> findLastScenarioName();
+
 }
