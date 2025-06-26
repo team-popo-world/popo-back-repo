@@ -57,7 +57,7 @@ public class Quest {
         this.state=newState;
     }
     //일일 퀘스트 생성용 정적 메서드
-    public static Quest createDailyQuest(UUID childId, String name, String description, int reward,QuestLabel label) {
+    public static Quest createDailyQuest(UUID childId, String name, String description, int reward,QuestLabel label,String imageUrl) {
         Quest quest = new Quest();
         quest.questId = UUID.randomUUID();
         quest.childId = childId;
