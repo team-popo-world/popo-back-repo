@@ -9,4 +9,5 @@ import java.util.UUID;
 @Setter
 public class SaveCustomScenarioRequestDTO {
     private UUID childId;
+    private String scenarioName;
 }
