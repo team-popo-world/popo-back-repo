@@ -46,6 +46,7 @@ public class ScenarioService {
                     null,
                     scenarioName,
                     request.getStory(),
+                    request.getSummary(),
                     request.getIsCustom(),
                     now,        // createdAt - 생성 시간
                     null,       // updatedAt - 생성 시에는 null

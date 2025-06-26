@@ -92,6 +92,7 @@ public class ParentInvestServiceImpl implements ParentInvestService {
             scenario.setChildId(requestDTO.getChildId());
             scenario.setScenarioName(requestDTO.getScenarioName());
             scenario.setStory(dto.getStory());
+            scenario.setSummary(dto.getSummary());
             scenario.setIsCustom(true);
             scenario.setCreateAt(now);
             scenario.setUpdatedAt(now);

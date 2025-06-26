@@ -49,7 +49,7 @@ public class ChatbotRequestConsumer {
 
         // 3. FastAPI 호출
         webClient.post()
-                .uri("http://15.164.94.158:8000/edit-scenario")
+                .uri("http://43.203.175.69:8004/edit-scenario")
                 .bodyValue(apiRequest)
                 .retrieve()
                 .bodyToMono(String.class)
