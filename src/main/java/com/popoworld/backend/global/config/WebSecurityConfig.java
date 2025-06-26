@@ -33,9 +33,6 @@ public class WebSecurityConfig {
                 .httpBasic(AbstractHttpConfigurer::disable)
                 .csrf(AbstractHttpConfigurer::disable)
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-                .exceptionHandling(exception ->
-                        exception.authenticationEntryPoint(jwtAuthenticationEntryPoint) // ✅ 추가
-                )
                 .authorizeHttpRequests(auth ->
                         auth
                                 // Swagger 접근 가능
@@ -54,6 +51,9 @@ public class WebSecurityConfig {
                                 .requestMatchers("/auth/token/refresh").permitAll()
                                 .requestMatchers("/api/dashboard/**").permitAll()
                                 .anyRequest().authenticated()
+                )
+                .exceptionHandling(exception ->
+                        exception.authenticationEntryPoint(jwtAuthenticationEntryPoint) // ✅ 추가
                 )
                 .addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider), UsernamePasswordAuthenticationFilter.class)
                 .build();
