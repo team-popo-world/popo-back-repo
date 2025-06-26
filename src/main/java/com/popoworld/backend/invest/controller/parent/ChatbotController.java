@@ -86,7 +86,7 @@ public class ChatbotController {
     @Operation(summary = "시나리오 리스트 중 하나 삭제",
             description = "오래되거나 마음에 들지 않는 시나리오 삭제"
     )
-    @DeleteMapping("/delete")
+    @PostMapping("/delete")
     public ResponseEntity<?> deleteScenario(@RequestBody DeleteCustomScenarioRequestDTO request) {
         // 데이터 삭제
         parentInvestService.deleteScenario(request.getScenarioId());

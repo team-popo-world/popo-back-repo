@@ -16,6 +16,8 @@ public class GetCustomScenarioListResponseDTO {
 
     private String story;
 
+    private String scenarioName;
+
     private String summary;
 
     private Boolean isCustom;
@@ -29,6 +31,7 @@ public class GetCustomScenarioListResponseDTO {
     public GetCustomScenarioListResponseDTO(InvestScenario scenario) {
         this.scenarioId = scenario.getScenarioId();
         this.story = scenario.getStory();
+        this.scenarioName = scenario.getScenarioName();
         this.summary = scenario.getSummary();
         this.isCustom = scenario.getIsCustom();
         this.createAt = scenario.getCreateAt();
