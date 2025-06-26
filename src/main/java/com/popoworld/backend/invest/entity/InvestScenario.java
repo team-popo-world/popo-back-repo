@@ -23,6 +23,7 @@ public class InvestScenario {
 
     private UUID childId;
 
+    @Column(name = "scenario_name")
     private String scenarioName;
 
 //    private UUID chapterId;
