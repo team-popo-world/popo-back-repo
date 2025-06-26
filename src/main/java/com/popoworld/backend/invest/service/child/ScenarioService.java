@@ -12,6 +12,8 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.ArrayList;
+import java.util.Optional;
+import java.util.Random;
 import java.util.UUID;
 
 import static com.popoworld.backend.global.token.SecurityUtil.getCurrentUserId;
@@ -36,11 +38,13 @@ public class ScenarioService {
             // 백엔드에서 설정하는 값들
             UUID scenarioId = UUID.randomUUID();
             LocalDateTime now = LocalDateTime.now(ZoneId.of("Asia/Seoul"));
+            String scenarioName = generateNextScenarioName();
 
             // InvestScenario 객체 생성
             InvestScenario scenario = new InvestScenario(
                     scenarioId,
                     null,
+                    scenarioName,
                     request.getStory(),
                     request.getIsCustom(),
                     now,        // createdAt - 생성 시간
@@ -58,39 +62,54 @@ public class ScenarioService {
         }
     }
 
+    public String generateNextScenarioName() {
+        Optional<String> lastNameOpt = investScenarioRepository.findLastScenarioName();
+        int nextNumber = 1;
+
+        if (lastNameOpt.isPresent()) {
+            String lastName = lastNameOpt.get(); // 예: "기본-0023"
+            String numberStr = lastName.replace("기본-", ""); // "0023"
+            try {
+                nextNumber = Integer.parseInt(numberStr) + 1; // 24
+            } catch (NumberFormatException ignored) {}
+        }
+
+        return String.format("기본-%04d", nextNumber); // 예: "기본-0024"
+    }
+
     /**
      * ML에서 생성된 커스텀 시나리오로 특정 챕터의 가장 오래된 시나리오 업데이트
      */
-    public String updateOldestScenario(CustomScenarioRequest request) {
-        try {
-            // 특정 chapterId 중에서 업데이트되지 않은 것 중 가장 오래된 시나리오 찾기
-            InvestScenario oldestScenario = investScenarioRepository
-                    .findTopByInvestChapter_ChapterIdAndUpdatedAtIsNullOrderByCreateAtAsc(request.getChapterId());
-
-            if (oldestScenario == null) {
-                throw new RuntimeException("챕터 " + request.getChapterId() + "에서 업데이트할 시나리오가 없습니다.");
-            }
-
-            // 시나리오 업데이트
-            LocalDateTime now = LocalDateTime.now(ZoneId.of("Asia/Seoul"));
-
-            InvestScenario updatedScenario = new InvestScenario(
-                    oldestScenario.getScenarioId(),
-                    oldestScenario.getChildId(),
-                    request.getStory(),                      // 새로운 story
-                    request.getIsCustom(),                   // 새로운 isCustom
-                    oldestScenario.getCreateAt(),            // 기존 createdAt 유지
-                    now,                                     // updatedAt을 현재 시간으로 설정
-                    oldestScenario.getInvestChapter(),
-                    oldestScenario.getInvestSessions()
-            );
-
-            investScenarioRepository.save(updatedScenario);
-
-            return "✅ 챕터 " + request.getChapterId() + "의 가장 오래된 시나리오가 업데이트되었습니다. ID: " + oldestScenario.getScenarioId();
-
-        } catch (Exception e) {
-            throw new RuntimeException("시나리오 업데이트 실패: " + e.getMessage());
-        }
-    }
+//    public String updateOldestScenario(CustomScenarioRequest request) {
+//        try {
+//            // 특정 chapterId 중에서 업데이트되지 않은 것 중 가장 오래된 시나리오 찾기
+//            InvestScenario oldestScenario = investScenarioRepository
+//                    .findTopByInvestChapter_ChapterIdAndUpdatedAtIsNullOrderByCreateAtAsc(request.getChapterId());
+//
+//            if (oldestScenario == null) {
+//                throw new RuntimeException("챕터 " + request.getChapterId() + "에서 업데이트할 시나리오가 없습니다.");
+//            }
+//
+//            // 시나리오 업데이트
+//            LocalDateTime now = LocalDateTime.now(ZoneId.of("Asia/Seoul"));
+//
+//            InvestScenario updatedScenario = new InvestScenario(
+//                    oldestScenario.getScenarioId(),
+//                    oldestScenario.getChildId(),
+//                    request.getStory(),                      // 새로운 story
+//                    request.getIsCustom(),                   // 새로운 isCustom
+//                    oldestScenario.getCreateAt(),            // 기존 createdAt 유지
+//                    now,                                     // updatedAt을 현재 시간으로 설정
+//                    oldestScenario.getInvestChapter(),
+//                    oldestScenario.getInvestSessions()
+//            );
+//
+//            investScenarioRepository.save(updatedScenario);
+//
+//            return "✅ 챕터 " + request.getChapterId() + "의 가장 오래된 시나리오가 업데이트되었습니다. ID: " + oldestScenario.getScenarioId();
+//
+//        } catch (Exception e) {
+//            throw new RuntimeException("시나리오 업데이트 실패: " + e.getMessage());
+//        }
+//    }
 }
