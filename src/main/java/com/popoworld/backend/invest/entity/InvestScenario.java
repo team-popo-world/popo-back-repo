@@ -31,6 +31,8 @@ public class InvestScenario {
     @Column(columnDefinition = "TEXT")
     private String story;
 
+    private String summary;
+
     private Boolean isCustom; //부모가 만든건지
 
     @Column(name = "create_at")  // DB 컬럼명과 맞춤
