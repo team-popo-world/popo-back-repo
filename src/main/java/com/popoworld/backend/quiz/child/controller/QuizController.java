@@ -37,7 +37,7 @@ public class QuizController {
     ) {
         try {
             UUID userId = getCurrentUserId();
-
+            log.info("userID QuizuserID QuizuserID QuizuserID QuizuserID QuizuserID QuizuserID QuizuserID Quiz {}", userId);
             if (!quizKafkaProducer.isRequestAllowed(userId)) {
                 throw new IllegalStateException("퀴즈는 하루에 한 번만 요청할 수 있습니다.");
             }
@@ -60,7 +60,7 @@ public class QuizController {
             @RequestParam String difficulty,
             @RequestParam String topic
     ) {
-  
+
         UUID userId = getCurrentUserId();
         QuizResponseDTO response = quizKafkaProducer.sendQuizRequest(userId, difficulty, topic);
         return ResponseEntity.ok(response);
