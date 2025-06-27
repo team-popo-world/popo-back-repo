@@ -30,7 +30,26 @@ public class QuizController {
 
     private final QuizService quizService;
     private final QuizKafkaProducer quizKafkaProducer;
-//    private final QuizSseEmitters sseEmitters;
+
+    @Operation(summary = "퀴즈 요청 하루 한 번" , description = "퀴즈 요청 하루 한 번 api")
+    @GetMapping("/active")
+    public ResponseEntity<?> requestQuizActive(
+    ) {
+        try {
+            UUID userId = getCurrentUserId();
+
+            if (!quizKafkaProducer.isRequestAllowed(userId)) {
+                throw new IllegalStateException("퀴즈는 하루에 한 번만 요청할 수 있습니다.");
+            }
+
+            quizKafkaProducer.markRequest(userId);
+
+            return ResponseEntity.ok("요청 성공");
+        }
+        catch (IllegalStateException e) {
+            return ResponseEntity.badRequest().build();
+        }
+    }
 
 
     @Operation(summary = "퀴즈 요청" , description = "퀴즈 요청 api" +
@@ -41,22 +60,11 @@ public class QuizController {
             @RequestParam String difficulty,
             @RequestParam String topic
     ) {
-        try {
-            UUID userId = getCurrentUserId();
+  
+        UUID userId = getCurrentUserId();
+        QuizResponseDTO response = quizKafkaProducer.sendQuizRequest(userId, difficulty, topic);
+        return ResponseEntity.ok(response);
 
-            if (!quizKafkaProducer.isRequestAllowed(userId)) {
-                throw new IllegalStateException("퀴즈는 하루에 한 번만 요청할 수 있습니다.");
-            }
-
-            QuizResponseDTO response = quizKafkaProducer.sendQuizRequest(userId, difficulty, topic);
-
-            quizKafkaProducer.markRequest(userId);
-
-            return ResponseEntity.ok(response);
-        }
-        catch (IllegalStateException e) {
-            return ResponseEntity.badRequest().build();
-        }
     }
 
 
