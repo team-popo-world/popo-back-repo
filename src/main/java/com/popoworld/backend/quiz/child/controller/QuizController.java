@@ -43,22 +43,17 @@ public class QuizController {
     ) {
         UUID userId = getCurrentUserId();
 
+        if (!quizKafkaProducer.isRequestAllowed(userId)) {
+            throw new IllegalStateException("퀴즈는 하루에 한 번만 요청할 수 있습니다.");
+        }
+
         QuizResponseDTO response = quizKafkaProducer.sendQuizRequest(userId, difficulty, topic);
+
+        quizKafkaProducer.markRequest(userId);
 
         return ResponseEntity.ok(response);
     }
 
-//    @Operation(summary = "SSE 연결", description = "퀴즈 알림용 SSE 연결")
-//    @GetMapping("/sse")
-//    public SseEmitter connect(HttpServletRequest request) throws AccessDeniedException {
-//        String token = request.getHeader("Authorization");
-//        if (token == null || !token.startsWith("Bearer ")) {
-//            throw new AccessDeniedException("Missing or invalid token");
-//        }
-//        log.info("연결 성공 연결 성공 연결 성공연결 성공연결 성공연결 성공연결 성공연결 성공연결 성공연결 성공연결 성공연결 성공연결 성공 ");
-//        UUID userId = UUID.fromString(jwtTokenProvider.getUserIdFromToken(token.substring(7)));
-//        return sseEmitters.create(userId);
-//    }
 
     @Operation(summary = "퀴즈 결과 저장" , description = "퀴즈 결과 저장 api")
     @PostMapping("/save")

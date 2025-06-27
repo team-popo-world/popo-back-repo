@@ -8,9 +8,11 @@ import com.popoworld.backend.quiz.child.entity.Quiz;
 import com.popoworld.backend.quiz.child.repository.QuizDataRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Component;
 
+import java.time.Duration;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -22,6 +24,7 @@ public class QuizKafkaProducer {
     private final KafkaTemplate<String, String> kafkaTemplate;
     private final ObjectMapper objectMapper;
     private final QuizDataRepository quizDataRepository;
+    private final RedisTemplate<String, String> redisTemplate;
 
     public QuizResponseDTO sendQuizRequest(UUID userId, String difficulty, String topic) {
         Optional<Quiz> quiz = quizDataRepository.findByUserIdAndDifficultyAndTopic(userId, difficulty, topic);
@@ -41,5 +44,15 @@ public class QuizKafkaProducer {
             log.error("Kafka 메시지 직렬화 실패", e);
             throw new RuntimeException("Kafka 메시지 전송 실패", e);
         }
+    }
+
+    public boolean isRequestAllowed(UUID userId) {
+        String key = "quiz:request:"+ userId;
+        return !Boolean.TRUE.equals(redisTemplate.hasKey(key));
+    }
+
+    public void markRequest(UUID userId) {
+        String key = "quiz:request:" + userId;
+        redisTemplate.opsForValue().set(key, "done", Duration.ofDays(1));
     }
 }
