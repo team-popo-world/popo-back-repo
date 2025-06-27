@@ -54,7 +54,7 @@ public class QuizController {
 
             return ResponseEntity.ok(response);
         }
-        catch (IllegalArgumentException e) {
+        catch (IllegalStateException e) {
             return ResponseEntity.badRequest().build();
         }
     }
