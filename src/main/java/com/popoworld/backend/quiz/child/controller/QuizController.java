@@ -41,17 +41,22 @@ public class QuizController {
             @RequestParam String difficulty,
             @RequestParam String topic
     ) {
-        UUID userId = getCurrentUserId();
+        try {
+            UUID userId = getCurrentUserId();
 
-        if (!quizKafkaProducer.isRequestAllowed(userId)) {
-            throw new IllegalStateException("퀴즈는 하루에 한 번만 요청할 수 있습니다.");
+            if (!quizKafkaProducer.isRequestAllowed(userId)) {
+                throw new IllegalStateException("퀴즈는 하루에 한 번만 요청할 수 있습니다.");
+            }
+
+            QuizResponseDTO response = quizKafkaProducer.sendQuizRequest(userId, difficulty, topic);
+
+            quizKafkaProducer.markRequest(userId);
+
+            return ResponseEntity.ok(response);
         }
-
-        QuizResponseDTO response = quizKafkaProducer.sendQuizRequest(userId, difficulty, topic);
-
-        quizKafkaProducer.markRequest(userId);
-
-        return ResponseEntity.ok(response);
+        catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().build();
+        }
     }
 
 

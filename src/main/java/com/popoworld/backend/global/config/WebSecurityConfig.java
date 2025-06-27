@@ -52,9 +52,9 @@ public class WebSecurityConfig {
                                 .requestMatchers("/api/dashboard/**").permitAll()
                                 .anyRequest().authenticated()
                 )
-//                .exceptionHandling(exception ->
-//                        exception.authenticationEntryPoint(jwtAuthenticationEntryPoint) // ✅ 추가
-//                )
+                .exceptionHandling(exception ->
+                        exception.authenticationEntryPoint(jwtAuthenticationEntryPoint) // ✅ 추가
+                )
                 .addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider), UsernamePasswordAuthenticationFilter.class)
                 .build();
     }
