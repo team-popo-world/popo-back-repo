@@ -12,13 +12,14 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
+@Slf4j
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/api/invest")
@@ -39,8 +40,10 @@ public class InvestController {
     @ApiResponse(responseCode = "404", description = "해당 챕터 ID 없음")
     @ApiResponse(responseCode = "500", description = "서버 내부 오류")
     public ResponseEntity<ChapterDataResponse> getChapterData(@RequestBody ChapterRequest request) {
+        log.info("챕터챕터챕터챕터챕터 = {}", request);
         try {
             ChapterDataResponse response = investService.getChapterDataAndCreateSession(request.getChapterId());
+            log.info("시나리오시나리오시나리오시나리오시나리오 = {}", response);
             return ResponseEntity.ok(response);
         } catch (RuntimeException e) {
             return ResponseEntity.notFound().build();
