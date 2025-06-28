@@ -6,6 +6,8 @@ import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
 import org.springframework.data.mongodb.core.mapping.FieldType;
 
+import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 @Getter
@@ -16,12 +18,18 @@ import java.util.UUID;
 @Document(collection = "user_graph")
 public class ChildReportGraph {
     @Id
-    private UUID id;
+    private String id;
 
     @Field(targetType = FieldType.STRING)
     private UUID userId; // childId 등으로 사용
 
-    private String investGraph;
-    private String questGraph;
-    private String shopGraph;
+    @Field("invest_graph")
+    private List<Map<String, Object>> investGraph;
+
+    @Field("quest_graph")
+    private List<Map<String,Object>> questGraph;
+
+    @Field("shop_graph")
+    private List<Map<String,Object>> shopGraph;
+
 }
