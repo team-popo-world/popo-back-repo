@@ -8,6 +8,6 @@ import java.util.Optional;
 import java.util.UUID;
 
 @Repository
-public interface ReportRepository extends MongoRepository<ChildReport, UUID> {
-    Optional<ChildReport> findById(UUID id);
+public interface ReportRepository extends MongoRepository<ChildReport, String> {
+    Optional<ChildReport> findByUserId(UUID userId);
 }
