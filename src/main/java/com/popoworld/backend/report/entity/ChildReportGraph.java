@@ -13,14 +13,15 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@Document(collection = "child_report_graph")
+@Document(collection = "user_graph")
 public class ChildReportGraph {
     @Id
+    private UUID id;
+
     @Field(targetType = FieldType.STRING)
-    private UUID childId; // childId 등으로 사용
+    private UUID userId; // childId 등으로 사용
 
     private String investGraph;
-    private String shopGraph;
     private String questGraph;
-
+    private String shopGraph;
 }

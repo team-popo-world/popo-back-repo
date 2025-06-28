@@ -13,14 +13,16 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@Document(collection = "child_report")
+@Document(collection = "user_analysis")
 public class ChildReport {
     @Id
-    @Field(targetType = FieldType.STRING)
-    private UUID childId; // childId 등으로 사용
+    private UUID id;
 
-    private String invest;
-    private String shop;
-    private String quest;
+    @Field(targetType = FieldType.STRING)
+    private UUID userId; // childId 등으로 사용
+
     private String all;
+    private String invest;
+    private String quest;
+    private String shop;
 }
