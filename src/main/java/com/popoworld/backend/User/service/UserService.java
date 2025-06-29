@@ -8,7 +8,7 @@ import com.popoworld.backend.User.dto.Response.RefreshTokenResponseDTO;
 import java.util.UUID;
 
 public interface UserService {
-    void signup(SignupRequestDTO requestDto);
+    void signup(SignupRequestDTO requestDto) throws Exception;
     LoginResponseDTO login(LoginRequestDTO requestDto);
     void logout(LogoutRequestDTO requestDto);
     RefreshTokenResponseDTO refreshToken(String requestDto);

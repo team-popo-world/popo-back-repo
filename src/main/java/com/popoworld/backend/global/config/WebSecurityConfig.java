@@ -49,7 +49,9 @@ public class WebSecurityConfig {
                                 .requestMatchers("/api/quiz/sse").permitAll()
                                 .requestMatchers("/api/scenario/default").permitAll()
                                 .requestMatchers("/auth/token/refresh").permitAll()
-                                .requestMatchers("/api/push/public-key").permitAll()
+                                .requestMatchers("/api/push/public-key",
+                                        "/api/push/subscribe",
+                                        "/api/push/message").permitAll()
                                 .anyRequest().authenticated()
                 )
                 .exceptionHandling(exception ->
