@@ -8,7 +8,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 @Repository
-public interface ReportGraphRepository extends MongoRepository<ChildReportGraph, UUID> {
-    Optional<ChildReportGraph> findById(UUID id);
+public interface ReportGraphRepository extends MongoRepository<ChildReportGraph, String> {
+    Optional<ChildReportGraph> findByUserId(UUID userId);
 
 }

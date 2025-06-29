@@ -16,7 +16,7 @@ import java.util.UUID;
 @Document(collection = "user_analysis")
 public class ChildReport {
     @Id
-    private UUID id;
+    private String id;
 
     @Field(targetType = FieldType.STRING)
     private UUID userId; // childId 등으로 사용
