@@ -11,6 +11,10 @@ import com.popoworld.backend.global.token.RefreshToken;
 import com.popoworld.backend.quest.repository.QuestRepository;
 import com.popoworld.backend.quest.service.QuestService;
 import com.popoworld.backend.quiz.child.service.QuizService;
+import com.popoworld.backend.webpush.entity.WebPush;
+import com.popoworld.backend.webpush.repository.PushRepository;
+import com.popoworld.backend.webpush.service.PushSubService;
+import com.popoworld.backend.webpush.service.PushSubscriptionService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -34,11 +38,14 @@ public class UserServiceImpl implements UserService {
     private final QuestService questService;
     private final StringRedisTemplate redisTemplate;
     private final QuizService quizService;
-    private final Duration TTL = Duration.ofDays(7); // 7일 TTL
+    private final Duration ACCESS_TTL = Duration.ofDays(1);
+    private final Duration REFRESH_TTL = Duration.ofDays(7);
+    private final PushRepository repository;
+    private final PushSubService pushService;
 
     // 공통로직
     @Override
-    public void signup(SignupRequestDTO requestDto) {
+    public void signup(SignupRequestDTO requestDto) throws Exception {
         if (userRepository.existsByEmail(requestDto.getEmail())) {
             throw new IllegalArgumentException("이미 사용 중인 이메일이에요.");
         }
@@ -69,6 +76,7 @@ public class UserServiceImpl implements UserService {
             user.setParentCode(requestDto.getParentCode()); // 입력값 저장
             user.setParent(parent); // FK 설정
             user.setPoint(10000); // 초기 포인트 설정
+
         } else {
             throw new IllegalArgumentException("role 값은 'Parent' 또는 'Child'만 가능합니다.");
         }
@@ -78,56 +86,48 @@ public class UserServiceImpl implements UserService {
         if ("Child".equalsIgnoreCase(user.getRole())) {
             questService.createDailyQuestsForNewChild(user.getUserId());
             quizService.createDefaultQuiz(user.getUserId());
+
+            WebPush sub = repository.findByUserId(user.getParent().getUserId())
+                    .orElseThrow(() -> new IllegalArgumentException("부모 유저의 구독 정보가 없습니다."));
+            pushService.sendNotification(sub, "새로운 자녀(" + user.getName() + ")가 등록됐습니다." );
         }
     }
 
     @Override
     public LoginResponseDTO login(LoginRequestDTO requestDto) {
-        // 비밀번호 검증
+        // 이메일 검증
         User user = userRepository.findByEmail(requestDto.getEmail())
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 사용자입니다."));
 
+        // 비밀번호 검증
         if (!passwordEncoder.matches(requestDto.getPassword(), user.getPassword())) {
             throw new IllegalArgumentException("비밀번호가 일치하지 않습니다.");
+        }
+
+        // 로그인 여부 검증
+        if (redisTemplate.hasKey(loginKey(requestDto.getEmail()))) {
+            throw new IllegalStateException("이미 다른 기기에서 로그인되어 있습니다.");
         }
 
         // 토큰 생성
         String accessToken = jwtTokenProvider.generateAccessToken(user);
         String refreshToken = jwtTokenProvider.generateRefreshToken(user.getEmail());
 
+
         // RefreshToken 저장
-        redisTemplate.opsForValue().set(user.getEmail(), refreshToken, TTL);
+        redisTemplate.opsForValue().set(loginKey(requestDto.getEmail()), "true", ACCESS_TTL);
+        redisTemplate.opsForValue().set(refreshKey(requestDto.getEmail()), refreshToken, REFRESH_TTL);
 
         // 로그인 응답
-        if ("Parent".equalsIgnoreCase(user.getRole())) {
-            List<User> children = userRepository.findAllChildrenByParentId(user.getUserId());
-            return new ParentLoginResponseDTO(
-                    accessToken,
-                    refreshToken,
-                    user.getRole(),
-                    user.getName(),
-                    user.getParentCode(),
-                    children.stream()
-                            .map(c -> ChildInfoDTO.builder().user(c).build())
-                            .toList()
-            );
-        } else if ("Child".equalsIgnoreCase(user.getRole())) {
-            return new ChildLoginResponseDTO(
-                    accessToken,
-                    refreshToken,
-                    user.getRole(),
-                    user.getName(),
-                    user.getPoint()
-            );
-        } else {
-            throw new IllegalArgumentException("role 값은 'Parent' 또는 'Child'만 가능합니다.");
-        }
+        return buildUserResponse(user, accessToken, refreshToken);
+
     }
 
     @Override
     public void logout(LogoutRequestDTO requestDto) {
-        // refreshToken 삭제
-        redisTemplate.delete(requestDto.getUserEmail());
+        String userEmail = requestDto.getUserEmail();
+        redisTemplate.delete(loginKey(userEmail));
+        redisTemplate.delete(refreshKey(userEmail));
     }
 
     @Override
@@ -143,7 +143,7 @@ public class UserServiceImpl implements UserService {
         String userEmail = jwtTokenProvider.getEmailFromToken(requestToken);
 
         // DB에서 토큰 존재 확인
-        String savedToken = redisTemplate.opsForValue().get(userEmail);
+        String savedToken = redisTemplate.opsForValue().get(refreshKey(userEmail));
 
         if (savedToken == null || !savedToken.equals(requestToken)) {
             throw new IllegalArgumentException("리프레시 토큰이 일치하지 않거나 만료되었습니다.");
@@ -156,7 +156,9 @@ public class UserServiceImpl implements UserService {
         // 새로운 토큰 생성 및 갱신
         String newAccessToken = jwtTokenProvider.generateAccessToken(user);
         String newRefreshToken = jwtTokenProvider.generateRefreshToken(userEmail);
-        redisTemplate.opsForValue().set(userEmail, newRefreshToken, TTL);
+
+        redisTemplate.opsForValue().set(refreshKey(userEmail), newRefreshToken, REFRESH_TTL);
+        redisTemplate.expire(loginKey(userEmail), ACCESS_TTL);
 
         return new RefreshTokenResponseDTO(newAccessToken, newRefreshToken);
     }
@@ -166,31 +168,30 @@ public class UserServiceImpl implements UserService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 사용자입니다."));
 
+        return buildUserResponse(user, null, null);
+    }
+
+    private String loginKey(String email) {
+        return "login:" + email;
+    }
+
+    private String refreshKey(String email) {
+        return "refresh:" + email;
+    }
+
+    private LoginResponseDTO buildUserResponse(User user, String accessToken, String refreshToken) {
         if ("Parent".equalsIgnoreCase(user.getRole())) {
             List<User> children = userRepository.findAllChildrenByParentId(user.getUserId());
             return new ParentLoginResponseDTO(
-                    null,
-                    null,
-                    user.getRole(),
-                    user.getName(),
-                    user.getParentCode(),
-                    children.stream()
-                            .map(c -> ChildInfoDTO.builder().user(c).build())
-                            .toList()
+                    accessToken, refreshToken, user.getRole(), user.getName(), user.getParentCode(),
+                    children.stream().map(c -> ChildInfoDTO.builder().user(c).build()).toList()
             );
         } else if ("Child".equalsIgnoreCase(user.getRole())) {
             return new ChildLoginResponseDTO(
-                    null,
-                    null,
-                    user.getRole(),
-                    user.getName(),
-                    user.getPoint()
+                    accessToken, refreshToken, user.getRole(), user.getName(), user.getPoint()
             );
-        } else {
-            throw new IllegalArgumentException("role 값은 'Parent' 또는 'Child'만 가능합니다.");
         }
+        throw new IllegalArgumentException("role 값은 'Parent' 또는 'Child'만 가능합니다.");
     }
-
-
 
 }
