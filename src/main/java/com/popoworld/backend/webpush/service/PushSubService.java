@@ -29,7 +29,7 @@ public class PushSubService {
         PushService pushService = new PushService()
                         .setPublicKey(publicKey)
                         .setPrivateKey(privateKey)
-                        .setSubject("mailto:admin@example.com");
+                        .setSubject("mailto:ooinl77@naver.com");
 
         Notification notification = new Notification(
                 sub.getEndpoint(),
