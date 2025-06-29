@@ -16,6 +16,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+import static com.popoworld.backend.global.token.SecurityUtil.getCurrentUserId;
+
 @Service
 @RequiredArgsConstructor
 public class PushSubscriptionService {
@@ -43,9 +45,9 @@ public class PushSubscriptionService {
      */
     public WebPush getByUserId(MessageRequestDTO requestDTO) {
         if ("Parent".equalsIgnoreCase(requestDTO.getRole())) {
-            User parent = userRepository.findByParentCodeAndRole(requestDTO.getParentCode(), requestDTO.getRole())
-                    .orElseThrow(() -> new IllegalArgumentException("유효한 부모 코드가 아니에요."));
-            return repository.findByUserId(parent.getUserId())
+            UUID childId = getCurrentUserId();
+            UUID parentId = userRepository.findParentIdByChildId(childId);
+            return repository.findByUserId(parentId)
                     .orElseThrow(() -> new IllegalArgumentException("부모 유저의 구독 정보가 없습니다."));
         } else if ("Child".equalsIgnoreCase(requestDTO.getRole())) {
             return repository.findByUserId(requestDTO.getUserId())

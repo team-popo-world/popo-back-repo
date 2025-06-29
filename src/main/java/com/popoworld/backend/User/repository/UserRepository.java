@@ -23,4 +23,8 @@ public interface UserRepository extends JpaRepository<User, UUID> {
     Optional<User> findByParentCodeAndRole(String parentCode, String role);
 
     List<User> findByRole(String role);
+
+    @Query("SELECT u.parent.userId FROM User u WHERE u.userId = :childId")
+    UUID findParentIdByChildId(@Param("childId") UUID childId);
+
 }
