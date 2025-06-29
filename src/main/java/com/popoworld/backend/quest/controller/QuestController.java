@@ -22,7 +22,7 @@ import static com.popoworld.backend.global.token.SecurityUtil.getCurrentUserId;
 @RestController
 @RequestMapping("/api/quest")
 @RequiredArgsConstructor
-@Tag(name = "퀘스트 관리 API", description = "포포월드 퀘스트 시스템 - 일일퀘스트와 부모퀘스트 관리")
+@Tag(name = "Quest Management", description = "포포월드 퀘스트 시스템 - 일일퀘스트와 부모퀘스트 관리")
 @SecurityRequirement(name = "accessToken")
 public class QuestController {
     private final QuestService questService;

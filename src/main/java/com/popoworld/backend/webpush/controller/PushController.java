@@ -5,6 +5,7 @@ import com.popoworld.backend.webpush.dto.PushSubscriptionRequest;
 import com.popoworld.backend.webpush.entity.WebPush;
 import com.popoworld.backend.webpush.service.PushSubService;
 import com.popoworld.backend.webpush.service.PushSubscriptionService;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
@@ -17,6 +18,7 @@ import static com.popoworld.backend.global.token.SecurityUtil.getCurrentUserId;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/push")
+@Tag(name = "Push Notification" ,description = "알림")
 public class PushController {
 
     private final PushSubscriptionService pushSubscriptionService;

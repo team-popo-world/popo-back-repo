@@ -23,7 +23,7 @@ import static com.popoworld.backend.global.token.SecurityUtil.getCurrentUserId;
 @RestController
 @RequestMapping("/api/dashboard")
 @RequiredArgsConstructor
-@Tag(name = "상점 대시보드 API", description = "ML 기반 자녀 대시보드 데이터 제공 - 소비패턴 및 상점 활동 분석")
+@Tag(name = "Shop Dashboard", description = "ML 기반 자녀 대시보드 데이터 제공 - 소비패턴 및 상점 활동 분석")
 public class MarketAnalyticsController {
 
     private final MarketAnalyticsService analyticsService;
