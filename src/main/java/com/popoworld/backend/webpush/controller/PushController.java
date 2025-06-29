@@ -1,5 +1,6 @@
 package com.popoworld.backend.webpush.controller;
 
+import com.popoworld.backend.webpush.dto.MessageRequestDTO;
 import com.popoworld.backend.webpush.dto.PushSubscriptionRequest;
 import com.popoworld.backend.webpush.entity.WebPush;
 import com.popoworld.backend.webpush.service.PushSubService;
@@ -36,10 +37,9 @@ public class PushController {
         return ResponseEntity.ok().build();
     }
 
-    @GetMapping("/test-alert")
-    public void testSend() throws Exception {
-        UUID userId = getCurrentUserId();
-        WebPush sub = pushSubscriptionService.getByUserId(userId);
-        pushService.sendNotification(sub, "🎉 테스트 알림입니다!");
+    @PostMapping("/message")
+    public void testSend(@RequestBody MessageRequestDTO requestDTO) throws Exception {
+        WebPush sub = pushSubscriptionService.getByUserId(requestDTO);
+        pushService.sendNotification(sub, requestDTO.getMessage());
     }
 }
