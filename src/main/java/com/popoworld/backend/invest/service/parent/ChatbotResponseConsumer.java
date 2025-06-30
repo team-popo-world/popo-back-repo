@@ -1,6 +1,8 @@
 package com.popoworld.backend.invest.service.parent;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.popoworld.backend.invest.dto.parent.dto.response.ChatbotResponsePayload;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -21,10 +23,10 @@ public class ChatbotResponseConsumer {
 
     private final ChatbotSseEmitters sseEmitters;
     private final ObjectMapper objectMapper;
-    private final KafkaTemplate<String, String> kafkaTemplate;
+    private final KafkaDltPublisher kafkaDltPublisher;
 
     @KafkaListener(topics = "chatbot.response", groupId = "chatbot-response-group")
-    public void onResponse(@Payload String message) {
+    public void onResponse(@Payload String message) throws JsonProcessingException {
         try {
             ChatbotResponsePayload payload = objectMapper.readValue(message, ChatbotResponsePayload.class);
             UUID userId = payload.getUserId();
@@ -37,13 +39,9 @@ public class ChatbotResponseConsumer {
 
         } catch (Exception e) {
             log.error("❗ Kafka 응답 처리 실패", e);
-            try {
-                // DLT 전송: chatbot.response.DLT
-                kafkaTemplate.send("chatbot.response.DLT", null, message);
-                log.warn("📦 chatbot.response.DLT 전송 완료");
-            } catch (Exception dltEx) {
-                log.error("❗ DLT 전송 실패", dltEx);
-            }
+            ObjectNode node = (ObjectNode) objectMapper.readTree(message);
+            node.put("error", "sse_failure");
+            kafkaDltPublisher.send("chatbot.response.DLT", null, objectMapper.writeValueAsString(node), e);
         }
     }
 }

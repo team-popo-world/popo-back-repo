@@ -2,6 +2,7 @@ package com.popoworld.backend.invest.service.parent;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.popoworld.backend.invest.dto.parent.dto.kafka.ChatKafkaPayload;
 import com.popoworld.backend.invest.dto.parent.dto.request.ChatbotStoryRequestDTO;
 import com.popoworld.backend.invest.dto.parent.dto.response.ChatbotResponsePayload;
@@ -24,6 +25,7 @@ public class ChatbotProcessor {
     private final WebClient webClient;
     private final ObjectMapper objectMapper;
     private final KafkaTemplate<String, String> kafkaTemplate;
+    private final KafkaDltPublisher kafkaDltPublisher;
 
     public void process(ChatKafkaPayload payload) throws JsonProcessingException {
         UUID userId = payload.getUserId();
@@ -69,9 +71,11 @@ public class ChatbotProcessor {
                         error -> {
                             log.error("❗ FastAPI 호출 실패 (userId: {}): {}", userId, error.getMessage(), error);
                             try {
-                                String failedPayload = objectMapper.writeValueAsString(payload);
-                                kafkaTemplate.send("chatbot.request.DLT", userId.toString(), failedPayload);
-                                log.warn("📦 FastAPI 실패 DLT 전송 완료 (userId: {})", userId);
+                                ObjectNode node = objectMapper.valueToTree(payload);
+                                node.put("error", "fastapi_failure");
+                                String failedPayload = objectMapper.writeValueAsString(node);
+
+                                kafkaDltPublisher.send("chatbot.request.DLT", userId.toString(), failedPayload, (Exception) error);
                             } catch (Exception ex) {
                                 log.error("❗ DLT 전송 실패 (FastAPI 에러 처리 중)", ex);
                             }
