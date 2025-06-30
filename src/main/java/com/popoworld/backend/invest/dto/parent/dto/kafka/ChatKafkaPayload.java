@@ -13,5 +13,6 @@ import java.util.UUID;
 @Builder
 public class ChatKafkaPayload {
     private UUID userId;
+    private UUID requestId;
     private String editRequest;
 }

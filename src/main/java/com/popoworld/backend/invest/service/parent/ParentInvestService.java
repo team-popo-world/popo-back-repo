@@ -14,7 +14,7 @@ public interface ParentInvestService {
     void deleteScenario(UUID scenarioId);
     CustomScenarioListDTO getScenarioList(UUID childId, String chapterId , PageRequest pageRequest);
     void setEditScenario(UUID userId, ChatbotSetRequestDTO requestDTO);
-    void processChatMessage(UUID userId, ChatbotEditRequestDTO requestDTO);
+    void processChatMessage(UUID userId, ChatbotEditRequestDTO requestDTO, UUID requestId);
 
     void saveScenario(UUID userId, SaveCustomScenarioRequestDTO requestDTO);
 }
