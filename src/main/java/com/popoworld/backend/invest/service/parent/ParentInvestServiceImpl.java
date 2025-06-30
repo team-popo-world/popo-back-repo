@@ -38,6 +38,7 @@ public class ParentInvestServiceImpl implements ParentInvestService {
     private final KafkaTemplate<String,String> kafkaTemplate;
     private final RedisTemplate<String, String> redisTemplate;
     private final InvestChapterRepository investChapterRepository;
+    private final KafkaDltPublisher kafkaDltPublisher;
 
     @Override
     public void setEditScenario(UUID userId, ChatbotSetRequestDTO requestDTO){
@@ -74,7 +75,7 @@ public class ParentInvestServiceImpl implements ParentInvestService {
             log.error("❗ Kafka 메시지 직렬화 실패 - DLT 전송 시도", e);
             try {
                 // 객체 그대로 다시 직렬화 시도해 DLT로 전송
-                String dltJson = String.format("""
+                String fallbackJson = String.format("""
                 {
                   "userId": "%s",
                   "requestId": "%s",
@@ -83,7 +84,7 @@ public class ParentInvestServiceImpl implements ParentInvestService {
                 }
                 """, userId, requestId, requestDTO.getEditRequest());
 
-                kafkaTemplate.send("chatbot.request.DLT", userId.toString(), dltJson);
+                kafkaDltPublisher.send("chatbot.request.DLT", userId.toString(), fallbackJson, e);
             } catch (Exception innerEx) {
                 log.error("❗ DLT 메시지 전송 실패 (userId: {})", userId, innerEx);
             }
