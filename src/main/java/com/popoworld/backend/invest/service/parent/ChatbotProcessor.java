@@ -28,6 +28,8 @@ public class ChatbotProcessor {
     private final KafkaDltPublisher kafkaDltPublisher;
 
     public void process(ChatKafkaPayload payload) throws JsonProcessingException {
+        long startTime = System.currentTimeMillis();
+        log.info("❗ 시간시간시간시간시간시간시간시간시간시간시간시간시간시간", startTime);
         UUID userId = payload.getUserId();
         UUID requestId = payload.getRequestId();
         String redisKey = "scenario:temp:" + userId;
@@ -44,14 +46,18 @@ public class ChatbotProcessor {
                 .story(cachedDto.getStory())
                 .editRequest(payload.getEditRequest())
                 .build();
-
+        long startTime1 = System.currentTimeMillis();
+        log.info("❗ 시간시간시간시간시간시간시간시간시간시간시간시간시간시간", startTime1);
         webClient.post()
                 .uri("http://43.203.175.69:8004/edit-scenario")
                 .bodyValue(apiRequest)
                 .retrieve()
                 .bodyToMono(String.class)
                 .subscribe(
+
                         result -> {
+                            long startTime2 = System.currentTimeMillis();
+                            log.info("❗ 시간시간시간시간시간시간시간시간시간시간시간시간시간시간", startTime2);
                             redisTemplate.opsForValue().set(redisKey, result, Duration.ofMinutes(30));
 
                             ChatbotResponsePayload responsePayload = ChatbotResponsePayload.builder()

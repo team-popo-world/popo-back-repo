@@ -63,6 +63,8 @@ public class ParentInvestServiceImpl implements ParentInvestService {
 
     @Override
     public void processChatMessage(UUID userId, ChatbotEditRequestDTO requestDTO, UUID requestId){
+        long startTime = System.currentTimeMillis();
+        log.info("❗ 시간시간시간시간시간시간시간시간시간시간시간시간시간시간", startTime);
         ChatKafkaPayload payload = new ChatKafkaPayload();
         payload.setUserId(userId);
         payload.setRequestId(requestId);

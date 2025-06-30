@@ -22,6 +22,8 @@ public class ChatbotRequestConsumer {
     private final KafkaDltPublisher kafkaDltPublisher;
     @KafkaListener(topics = "chatbot.request", groupId = "chatbot-request-group")
     public void onRequest(@Payload String messageJson) {
+        long startTime = System.currentTimeMillis();
+        log.info("❗ 시간시간시간시간시간시간시간시간시간시간시간시간시간시간", startTime);
         // 1. JSON → 객체
         try {
             ChatKafkaPayload payload = objectMapper.readValue(messageJson, ChatKafkaPayload.class);

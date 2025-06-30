@@ -27,6 +27,8 @@ public class ChatbotResponseConsumer {
 
     @KafkaListener(topics = "chatbot.response", groupId = "chatbot-response-group")
     public void onResponse(@Payload String message) throws JsonProcessingException {
+        long startTime = System.currentTimeMillis();
+        log.info("❗ 시간시간시간시간시간시간시간시간시간시간시간시간시간시간", startTime);
         try {
             ChatbotResponsePayload payload = objectMapper.readValue(message, ChatbotResponsePayload.class);
             UUID userId = payload.getUserId();
