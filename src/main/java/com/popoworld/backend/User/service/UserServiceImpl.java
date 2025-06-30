@@ -17,6 +17,7 @@ import com.popoworld.backend.webpush.service.PushSubService;
 import com.popoworld.backend.webpush.service.PushSubscriptionService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -30,6 +31,7 @@ import java.util.UUID;
 @Service
 @RequiredArgsConstructor
 @Transactional
+@Slf4j
 public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
@@ -87,9 +89,19 @@ public class UserServiceImpl implements UserService {
             questService.createDailyQuestsForNewChild(user.getUserId());
             quizService.createDefaultQuiz(user.getUserId());
 
-            WebPush sub = repository.findByUserId(user.getParent().getUserId())
-                    .orElseThrow(() -> new IllegalArgumentException("부모 유저의 구독 정보가 없습니다."));
-            pushService.sendNotification(sub, "새로운 자녀(" + user.getName() + ")가 등록됐습니다." );
+            repository.findByUserId(user.getParent().getUserId())
+                    .ifPresentOrElse(
+                            sub -> {
+                                try {
+                                    pushService.sendNotification(sub, "새로운 자녀(" + user.getName() + ")가 등록됐습니다.");
+                                } catch (Exception e) {
+                                    log.error("푸시 알림 전송 중 오류 발생, userId={}", user.getParent().getUserId(), e);
+                                    // 예외 던지지 않고 무시하여 회원가입 흐름 유지
+                                }
+                            },
+                            () -> log.warn("부모 유저의 푸시 구독 정보가 없어 알림을 보내지 못했습니다. userId={}", user.getParent().getUserId())
+                    );
+
         }
     }
 
