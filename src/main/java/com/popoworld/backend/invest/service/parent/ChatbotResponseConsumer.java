@@ -6,6 +6,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.kafka.annotation.KafkaListener;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.support.KafkaHeaders;
 import org.springframework.messaging.handler.annotation.Header;
 import org.springframework.messaging.handler.annotation.Payload;
@@ -19,8 +20,8 @@ import java.util.UUID;
 public class ChatbotResponseConsumer {
 
     private final ChatbotSseEmitters sseEmitters;
-    private final RedisTemplate<String, String> redisTemplate;
     private final ObjectMapper objectMapper;
+    private final KafkaTemplate<String, String> kafkaTemplate;
 
     @KafkaListener(topics = "chatbot.response", groupId = "chatbot-response-group")
     public void onResponse(@Payload String message) {
@@ -36,6 +37,13 @@ public class ChatbotResponseConsumer {
 
         } catch (Exception e) {
             log.error("❗ Kafka 응답 처리 실패", e);
+            try {
+                // DLT 전송: chatbot.response.DLT
+                kafkaTemplate.send("chatbot.response.DLT", null, message);
+                log.warn("📦 chatbot.response.DLT 전송 완료");
+            } catch (Exception dltEx) {
+                log.error("❗ DLT 전송 실패", dltEx);
+            }
         }
     }
 }
