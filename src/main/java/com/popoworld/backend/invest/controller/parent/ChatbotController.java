@@ -48,9 +48,9 @@ public class ChatbotController {
     public ResponseEntity<?> chat(@RequestBody ChatbotEditRequestDTO requestDTO) {
         //요청데이터 받아서
         UUID userId = getCurrentUserId();
-
+        UUID requestId = UUID.randomUUID();
         //ml fastapi 호출
-        parentInvestService.processChatMessage(userId, requestDTO);
+        parentInvestService.processChatMessage(userId, requestDTO, requestId);
 
         //응답 반환
         return ResponseEntity.accepted().build(); // 비동기이므로 즉시 응답
