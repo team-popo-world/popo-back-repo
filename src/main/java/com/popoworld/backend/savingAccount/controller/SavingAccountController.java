@@ -25,7 +25,7 @@ import static com.popoworld.backend.global.token.SecurityUtil.getCurrentUserId;
 @RestController
 @RequestMapping("/api/saveAccount")
 @RequiredArgsConstructor
-@Tag(name = "저축통장 관리", description = "저축통장 생성, 조회, 매일입금 기능을 제공하는 API")
+@Tag(name = "Child Saving Account", description = "저축통장 생성, 조회, 매일입금 기능을 제공하는 API")
 @SecurityRequirement(name = "bearerAuth")
 public class SavingAccountController {
 

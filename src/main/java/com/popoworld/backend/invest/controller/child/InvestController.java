@@ -23,7 +23,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/api/invest")
-@Tag(name="Invest", description = "모의투자 관련 API")
+@Tag(name="Child Invest", description = "아이용 모의투자 관련 API")
 public class InvestController {
 
     @Autowired
