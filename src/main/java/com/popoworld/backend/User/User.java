@@ -39,6 +39,13 @@ public class User {
     @CreationTimestamp
     private LocalDateTime createdAt;
 
+    @Column(name = "tutorial_completed")
+    private Boolean tutorialCompleted = false; //튜토리얼 완료 여부
+
+    public boolean isTutorialCompleted() {
+        return tutorialCompleted != null && tutorialCompleted;
+    }
+
     //포인트 차감 메서드
     public void deductPoints(int amount) {
         if (this.point < amount) {

@@ -2,19 +2,20 @@ package com.popoworld.backend.User.service;
 
 import com.popoworld.backend.User.User;
 import com.popoworld.backend.User.dto.ChildInfoDTO;
-import com.popoworld.backend.User.repository.RefreshTokenRepository;
+import com.popoworld.backend.User.dto.Request.LoginRequestDTO;
+import com.popoworld.backend.User.dto.Request.LogoutRequestDTO;
+import com.popoworld.backend.User.dto.Request.SignupRequestDTO;
+import com.popoworld.backend.User.dto.Response.ChildLoginResponseDTO;
+import com.popoworld.backend.User.dto.Response.LoginResponseDTO;
+import com.popoworld.backend.User.dto.Response.ParentLoginResponseDTO;
+import com.popoworld.backend.User.dto.Response.RefreshTokenResponseDTO;
 import com.popoworld.backend.User.repository.UserRepository;
-import com.popoworld.backend.User.dto.Request.*;
-import com.popoworld.backend.User.dto.Response.*;
 import com.popoworld.backend.global.token.JwtTokenProvider;
-import com.popoworld.backend.global.token.RefreshToken;
-import com.popoworld.backend.quest.repository.QuestRepository;
 import com.popoworld.backend.quest.service.QuestService;
 import com.popoworld.backend.quiz.child.service.QuizService;
 import com.popoworld.backend.webpush.entity.WebPush;
 import com.popoworld.backend.webpush.repository.PushRepository;
 import com.popoworld.backend.webpush.service.PushSubService;
-import com.popoworld.backend.webpush.service.PushSubscriptionService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -22,9 +23,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.Duration;
-import java.time.Instant;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -57,7 +56,7 @@ public class UserServiceImpl implements UserService {
         user.setSex(requestDto.getSex());
         user.setAge(requestDto.getAge());
         user.setRole(requestDto.getRole());
-
+        user.setTutorialCompleted(false);
 
         // 역할에 따라 분기
         if ("Parent".equalsIgnoreCase(requestDto.getRole())) {
@@ -188,10 +187,18 @@ public class UserServiceImpl implements UserService {
             );
         } else if ("Child".equalsIgnoreCase(user.getRole())) {
             return new ChildLoginResponseDTO(
-                    accessToken, refreshToken, user.getRole(), user.getName(), user.getPoint()
+                    accessToken, refreshToken, user.getRole(), user.getName(), user.getPoint(),user.isTutorialCompleted()
             );
         }
         throw new IllegalArgumentException("role 값은 'Parent' 또는 'Child'만 가능합니다.");
     }
 
+    @Override
+    public void completeTutorial(UUID userId){
+        User user = userRepository.findById(userId)
+                .orElseThrow(()-> new IllegalArgumentException("존재하지 않는 사용자입니다."));
+        user.setTutorialCompleted(true);
+        userRepository.save(user);
+    }
 }
+

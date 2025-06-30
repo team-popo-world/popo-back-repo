@@ -7,9 +7,11 @@ import lombok.Setter;
 @Setter
 public class ChildLoginResponseDTO extends LoginResponseDTO{
     private int point;
+    private boolean tutorialCompleted;
 
-    public ChildLoginResponseDTO(String accessToken, String refreshToken, String role, String name, int point) {
+    public ChildLoginResponseDTO(String accessToken, String refreshToken, String role, String name, int point,boolean tutorialCompleted) {
         super(accessToken, refreshToken, role, name);
         this.point = point;
+        this.tutorialCompleted = tutorialCompleted;
     }
 }
