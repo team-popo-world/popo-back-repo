@@ -44,7 +44,8 @@ public class WebSecurityConfig {
                                 // 로그인 회원가입만 접근 가능 나머지는 인증 해야함
                                 .requestMatchers(
                                         "/auth/signup",
-                                        "/auth/login").permitAll()
+                                        "/auth/login",
+                                        "/auth/logout").permitAll()
                                 .requestMatchers("/api/chatbot/sse").permitAll()
                                 .requestMatchers("/api/quiz/sse").permitAll()
                                 .requestMatchers("/api/scenario/default").permitAll()

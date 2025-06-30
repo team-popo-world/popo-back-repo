@@ -59,10 +59,11 @@ public class ParentInvestServiceImpl implements ParentInvestService {
     };
 
     @Override
-    public void processChatMessage(UUID userId, ChatbotEditRequestDTO requestDTO){
+    public void processChatMessage(UUID userId, ChatbotEditRequestDTO requestDTO, UUID requestId){
         try {
             ChatKafkaPayload payload = new ChatKafkaPayload();
             payload.setUserId(userId);
+            payload.setRequestId(requestId);
             payload.setEditRequest(requestDTO.getEditRequest());
 
             String jsonPayload = objectMapper.writeValueAsString(payload);
