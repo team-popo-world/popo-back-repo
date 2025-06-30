@@ -26,7 +26,8 @@ public class GlobalExceptionHandler {
             IllegalArgumentException.class,
             RuntimeException.class,
             EntityNotFoundException.class,
-            AccessDeniedException.class
+            AccessDeniedException.class,
+            IllegalStateException.class,
     })
     public ResponseEntity<Map<String, Object>> handleCommonExceptions(RuntimeException ex) {
         HttpStatus status;
@@ -37,6 +38,8 @@ public class GlobalExceptionHandler {
             status = HttpStatus.NOT_FOUND;
         } else if (ex instanceof IllegalArgumentException) {
             status = HttpStatus.BAD_REQUEST;
+        } else if (ex instanceof IllegalStateException) {
+            status = HttpStatus.CONFLICT;
         } else {
             status = HttpStatus.INTERNAL_SERVER_ERROR;
         }

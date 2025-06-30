@@ -15,6 +15,7 @@ import com.popoworld.backend.invest.repository.InvestChapterRepository;
 import com.popoworld.backend.invest.repository.InvestScenarioRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.kafka.core.KafkaTemplate;
@@ -29,6 +30,7 @@ import java.util.UUID;
 @Service
 @RequiredArgsConstructor
 @Transactional
+@Slf4j
 public class ParentInvestServiceImpl implements ParentInvestService {
 
     private final InvestScenarioRepository investScenarioRepository;
@@ -60,16 +62,33 @@ public class ParentInvestServiceImpl implements ParentInvestService {
 
     @Override
     public void processChatMessage(UUID userId, ChatbotEditRequestDTO requestDTO, UUID requestId){
+        ChatKafkaPayload payload = new ChatKafkaPayload();
+        payload.setUserId(userId);
+        payload.setRequestId(requestId);
+        payload.setEditRequest(requestDTO.getEditRequest());
+
         try {
-            ChatKafkaPayload payload = new ChatKafkaPayload();
-            payload.setUserId(userId);
-            payload.setRequestId(requestId);
-            payload.setEditRequest(requestDTO.getEditRequest());
-
             String jsonPayload = objectMapper.writeValueAsString(payload);
-
             kafkaTemplate.send("chatbot.request", userId.toString(), jsonPayload);
         } catch (JsonProcessingException e) {
+            log.error("❗ Kafka 메시지 직렬화 실패 - DLT 전송 시도", e);
+            try {
+                // 객체 그대로 다시 직렬화 시도해 DLT로 전송
+                String dltJson = String.format("""
+                {
+                  "userId": "%s",
+                  "requestId": "%s",
+                  "editRequest": "%s",
+                  "error": "serialization_failure"
+                }
+                """, userId, requestId, requestDTO.getEditRequest());
+
+                kafkaTemplate.send("chatbot.request.DLT", userId.toString(), dltJson);
+            } catch (Exception innerEx) {
+                log.error("❗ DLT 메시지 전송 실패 (userId: {})", userId, innerEx);
+            }
+
+            // 원래 예외는 유지
             throw new RuntimeException("Kafka 메시지 직렬화 실패", e);
         }
     };

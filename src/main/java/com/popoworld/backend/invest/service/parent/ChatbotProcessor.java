@@ -68,7 +68,13 @@ public class ChatbotProcessor {
                         },
                         error -> {
                             log.error("❗ FastAPI 호출 실패 (userId: {}): {}", userId, error.getMessage(), error);
-                            // TODO: kafkaTemplate.send("chatbot.request.DLT", objectMapper.writeValueAsString(payload));
+                            try {
+                                String failedPayload = objectMapper.writeValueAsString(payload);
+                                kafkaTemplate.send("chatbot.request.DLT", userId.toString(), failedPayload);
+                                log.warn("📦 FastAPI 실패 DLT 전송 완료 (userId: {})", userId);
+                            } catch (Exception ex) {
+                                log.error("❗ DLT 전송 실패 (FastAPI 에러 처리 중)", ex);
+                            }
                         }
                 );
     }
