@@ -21,4 +21,6 @@ public class SecurityUtil {
         }
         return (String) authentication.getPrincipal();
     }
+
+
 }

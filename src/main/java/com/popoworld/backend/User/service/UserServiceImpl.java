@@ -35,9 +35,9 @@ public class UserServiceImpl implements UserService {
     private final PasswordEncoder passwordEncoder;
     private final JwtTokenProvider jwtTokenProvider;
     private final QuestService questService;
-    private final StringRedisTemplate redisTemplate;
     private final QuizService quizService;
-    private final Duration ACCESS_TTL = Duration.ofDays(1);
+    private final StringRedisTemplate redisTemplate;
+    private final Duration ACCESS_TTL = Duration.ofHours(1);
     private final Duration REFRESH_TTL = Duration.ofDays(7);
     private final PushRepository repository;
     private final PushSubService pushService;

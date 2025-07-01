@@ -5,6 +5,7 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.util.StringUtils;
@@ -17,6 +18,7 @@ import java.util.Collections;
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtTokenProvider jwtTokenProvider;
+    private final StringRedisTemplate redisTemplate;
 
 
     @Override
@@ -35,7 +37,18 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         if (token != null && jwtTokenProvider.validateToken(token)) {
             String email = jwtTokenProvider.getEmailFromToken(token);
             String userId = jwtTokenProvider.getUserIdFromToken(token);
+            String tokenSessionId = jwtTokenProvider.getSessionIdFromToken(token);
 
+            // Redis에 저장된 현재 유효한 세션 ID
+            String redisSessionId = redisTemplate.opsForValue().get("session:" + email);
+
+            // 세션 ID 불일치 → 다른 브라우저에서 로그인됨
+            if (redisSessionId == null || !redisSessionId.equals(tokenSessionId)) {
+                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                response.setContentType("application/json");
+                response.getWriter().write("{\"error\": \"중복 로그인으로 세션이 만료되었습니다.\"}");
+                return;
+            }
             UsernamePasswordAuthenticationToken authentication =
                     new UsernamePasswordAuthenticationToken(
                             email, // principal (또는 User 객체)
