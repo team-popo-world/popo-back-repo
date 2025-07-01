@@ -9,6 +9,7 @@ import com.popoworld.backend.webpush.dto.MessageRequestDTO;
 import com.popoworld.backend.webpush.dto.PushSubscriptionRequest;
 import com.popoworld.backend.webpush.entity.WebPush;
 import com.popoworld.backend.webpush.repository.PushRepository;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -28,6 +29,7 @@ public class PushSubscriptionService {
     /**
      * 구독 정보 저장. 같은 userId가 있으면 덮어쓰기.
      */
+    @Transactional
     public void save(UUID userId, PushSubscriptionRequest request) {
         Optional<WebPush> existing = repository.findByUserId(userId);
 

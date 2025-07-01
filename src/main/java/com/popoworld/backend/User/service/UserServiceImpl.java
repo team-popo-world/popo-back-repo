@@ -15,6 +15,7 @@ import com.popoworld.backend.webpush.entity.WebPush;
 import com.popoworld.backend.webpush.repository.PushRepository;
 import com.popoworld.backend.webpush.service.PushSubService;
 import com.popoworld.backend.webpush.service.PushSubscriptionService;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -30,7 +31,6 @@ import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
-@Transactional
 @Slf4j
 public class UserServiceImpl implements UserService {
 
@@ -47,6 +47,7 @@ public class UserServiceImpl implements UserService {
 
     // 공통로직
     @Override
+    @Transactional
     public void signup(SignupRequestDTO requestDto) throws Exception {
         if (userRepository.existsByEmail(requestDto.getEmail())) {
             throw new IllegalArgumentException("이미 사용 중인 이메일이에요.");
@@ -106,7 +107,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public LoginResponseDTO login(LoginRequestDTO requestDto) {
+    public LoginResponseDTO login(LoginRequestDTO requestDto, HttpServletRequest request) {
         // 이메일 검증
         User user = userRepository.findByEmail(requestDto.getEmail())
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 사용자입니다."));
@@ -116,10 +117,22 @@ public class UserServiceImpl implements UserService {
             throw new IllegalArgumentException("비밀번호가 일치하지 않습니다.");
         }
 
-        // 로그인 여부 검증
-        if (redisTemplate.hasKey(loginKey(requestDto.getEmail()))) {
-            throw new IllegalStateException("이미 다른 기기에서 로그인되어 있습니다.");
+        // 도메인 검증
+        String origin = request.getHeader("Origin");
+        if (origin == null || origin.contains("localhost")) {
+            log.info("✅ Swagger 또는 로컬 환경에서 접근 - 도메인 검증 생략");
+        } else {
+            if ("Child".equalsIgnoreCase(user.getRole()) && !origin.contains("child-popo-world-front.vercel.app")) {
+                throw new IllegalStateException("자녀는 지정된 도메인에서만 로그인할 수 있어요.");
+            }
+            if ("Parent".equalsIgnoreCase(user.getRole()) && !origin.contains("parent-popo-world-front.vercel.app")) {
+                throw new IllegalStateException("부모는 지정된 도메인에서만 로그인할 수 있어요.");
+            }
         }
+        
+
+        redisTemplate.delete(loginKey(requestDto.getEmail()));
+        redisTemplate.delete(refreshKey(requestDto.getEmail()));
 
         // 토큰 생성
         String accessToken = jwtTokenProvider.generateAccessToken(user);
@@ -136,6 +149,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @Transactional
     public void logout(LogoutRequestDTO requestDto) {
         String userEmail = requestDto.getUserEmail();
         redisTemplate.delete(loginKey(userEmail));
@@ -143,6 +157,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @Transactional
     public RefreshTokenResponseDTO refreshToken(String requestDto) {
         String requestToken = requestDto;
 

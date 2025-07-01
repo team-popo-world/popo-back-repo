@@ -23,10 +23,10 @@ public class ChatbotRequestConsumer {
     @KafkaListener(topics = "chatbot.request", groupId = "chatbot-request-group")
     public void onRequest(@Payload String messageJson) {
         long startTime = System.currentTimeMillis();
-        log.info("❗ 시간시간시간시간시간시간시간시간시간시간시간시간시간시간", startTime);
         // 1. JSON → 객체
         try {
             ChatKafkaPayload payload = objectMapper.readValue(messageJson, ChatKafkaPayload.class);
+            log.info("❗ 시간시간시간시간시간시간시간시간시간시간시간시간시간시간 {}, {}", payload.getUserId(),startTime);
             chatbotProcessor.process(payload);
         } catch (Exception e) {
             log.error("❗ Kafka 메시지 처리 실패 - DLT 후보: {}", e.getMessage(), e);

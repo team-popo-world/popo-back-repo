@@ -22,7 +22,6 @@ import java.util.UUID;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-@Transactional
 public class QuizService {
 
     private final KafkaTemplate kafkaTemplate;
@@ -51,6 +50,7 @@ public class QuizService {
         }
     }
 
+    @Transactional
     public void createDefaultQuiz(UUID childId) {
         List<Quiz> newQuiz = createDefaultQuizList(childId);
         log.info("questionJson={}", newQuiz.get(1));
@@ -86,6 +86,7 @@ public class QuizService {
         return dailyQuiz;
     }
 
+    @Transactional
     public int getPoint(UUID userId, QuizRewardRequestDTO request) {
         User user = userRepository.findById(userId).orElseThrow(() -> new IllegalArgumentException("존재하지 않는 사용자입니다."));
         user.addPoints(request.getPoint());

@@ -29,7 +29,6 @@ import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
-@Transactional
 @Slf4j
 public class ParentInvestServiceImpl implements ParentInvestService {
 
@@ -64,7 +63,7 @@ public class ParentInvestServiceImpl implements ParentInvestService {
     @Override
     public void processChatMessage(UUID userId, ChatbotEditRequestDTO requestDTO, UUID requestId){
         long startTime = System.currentTimeMillis();
-        log.info("❗ 시간시간시간시간시간시간시간시간시간시간시간시간시간시간", startTime);
+        log.info("❗ 시간시간시간시간시간시간시간시간시간시간시간시간시간시간 {}, {}", userId,startTime);
         ChatKafkaPayload payload = new ChatKafkaPayload();
         payload.setUserId(userId);
         payload.setRequestId(requestId);
@@ -96,6 +95,7 @@ public class ParentInvestServiceImpl implements ParentInvestService {
         }
     };
 
+    @Transactional
     @Override
     public void saveScenario(UUID userId, SaveCustomScenarioRequestDTO requestDTO) {
         UUID scenarioId = UUID.randomUUID();
@@ -128,6 +128,7 @@ public class ParentInvestServiceImpl implements ParentInvestService {
     }
 
     @Override
+    @Transactional
     public void deleteScenario(UUID scenarioId) {
         // 존재 여부 확인 (예외 처리 가능)
         InvestScenario scenario = investScenarioRepository.findById(scenarioId)
