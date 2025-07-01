@@ -52,8 +52,7 @@ public class ScenarioService {
                     request.getIsCustom(),
                     now,        // createdAt - 생성 시간
                     null,       // updatedAt - 생성 시에는 null
-                    chapter,       // investChapter - chapterId로 연결할 수도 있음
-                    new ArrayList<>() // investSessions
+                    chapter       // investChapter - chapterId로 연결할 수도 있음
             );
 
             investScenarioRepository.save(scenario);

@@ -23,6 +23,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 import java.util.UUID;
@@ -56,28 +57,48 @@ public class InvestService {
                     ", 보유 포인트: " + child.getPoint());
         }
 
-        // 4. 시나리오 조회(우선순위: 해당 아이의 커스텀 시나리오 > 기본 시나리오)
         InvestScenario selectedScenario = null;
 
-        // 4-1. 먼저 해당 아이의 커스텀 시나리오들 조회 (childId = 현재 사용자 & isCustom = true)
+        // 1. 커스텀 시나리오 조회
         List<InvestScenario> customScenarios = investScenarioRepository
                 .findByChildIdAndInvestChapter_ChapterIdAndIsCustom(childId, chapterId, true);
 
-        if(!customScenarios.isEmpty()){
-            // 해당 아이의 커스텀 시나리오가 있으면 그 중에서 랜덤으로 선택
-            Random random = new Random();
-            int randomIndex = random.nextInt(customScenarios.size());
-            selectedScenario = customScenarios.get(randomIndex);
+        if (!customScenarios.isEmpty()) {
+            // 2. 실행된 커스텀 시나리오 목록 조회
+            List<UUID> executedScenarioIds = investSessionRepository
+                    .findExecutedScenarioIdsByChildIdAndScenarioIds(
+                            childId,
+                            customScenarios.stream().map(InvestScenario::getScenarioId).toList()
+                    );
+
+            // 3. 실행 안 된 커스텀 시나리오들 필터링
+            List<InvestScenario> notExecutedCustomScenarios = customScenarios.stream()
+                    .filter(s -> !executedScenarioIds.contains(s.getScenarioId()))
+                    .toList();
+
+            if (!notExecutedCustomScenarios.isEmpty()) {
+                // 3-1. 실행되지 않은 커스텀 시나리오 중 랜덤 선택
+                selectedScenario = getRandomScenario(notExecutedCustomScenarios);
+            } else {
+                // 3-2. 기본 시나리오도 포함해서 랜덤 선택
+                List<InvestScenario> defaultScenarios = investScenarioRepository
+                        .findByChildIdIsNullAndInvestChapter_ChapterIdAndIsCustom(chapterId, false);
+
+                List<InvestScenario> allScenarios = new ArrayList<>();
+                allScenarios.addAll(customScenarios);
+                allScenarios.addAll(defaultScenarios);
+
+                if (!allScenarios.isEmpty()) {
+                    selectedScenario = getRandomScenario(allScenarios);
+                }
+            }
         } else {
-            // 4-2. 커스텀 시나리오가 없으면 기본 시나리오들 조회 (childId = null & isCustom = false)
+            // 4. 커스텀 시나리오가 없을 때 기본 시나리오에서 랜덤 선택
             List<InvestScenario> defaultScenarios = investScenarioRepository
                     .findByChildIdIsNullAndInvestChapter_ChapterIdAndIsCustom(chapterId, false);
 
-            if(!defaultScenarios.isEmpty()){
-                // 기본 시나리오 중에서 랜덤으로 선택
-                Random random = new Random();
-                int randomIndex = random.nextInt(defaultScenarios.size());
-                selectedScenario = defaultScenarios.get(randomIndex);
+            if (!defaultScenarios.isEmpty()) {
+                selectedScenario = getRandomScenario(defaultScenarios);
             }
         }
 
@@ -106,7 +127,7 @@ public class InvestService {
                 null,             // success - 아직 모름
                 null,             // profit - 아직 모름
                 null,             // ml 분석 후 배정
-                selectedScenario          // 조회한 scenario 객체
+                selectedScenario.getScenarioId()          // 조회한 scenario 객체
         );
 
         // 7. 세션 저장
@@ -158,7 +179,7 @@ public class InvestService {
                 request.getSuccess(),                  // 프론트에서 받은 성공 여부
                 request.getProfit(),                   // 프론트에서 받은 수익률
                 null,
-                existingSession.getInvestScenario()    // 기존 scenario 유지
+                existingSession.getScenarioId()   // 기존 scenario 유지
         );
 
         // 7. 업데이트된 세션 저장
@@ -217,6 +238,11 @@ public class InvestService {
         } catch (Exception e) {
             throw new RuntimeException("카프카 전송 실패: " + e.getMessage());
         }
+    }
+
+    private InvestScenario getRandomScenario(List<InvestScenario> scenarios) {
+        Random random = new Random();
+        return scenarios.get(random.nextInt(scenarios.size()));
     }
 }
 
