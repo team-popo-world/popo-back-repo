@@ -2,9 +2,14 @@ package com.popoworld.backend.User.service;
 
 import com.popoworld.backend.User.User;
 import com.popoworld.backend.User.dto.ChildInfoDTO;
+import com.popoworld.backend.User.dto.Request.LoginRequestDTO;
+import com.popoworld.backend.User.dto.Request.LogoutRequestDTO;
+import com.popoworld.backend.User.dto.Request.SignupRequestDTO;
+import com.popoworld.backend.User.dto.Response.ChildLoginResponseDTO;
+import com.popoworld.backend.User.dto.Response.LoginResponseDTO;
+import com.popoworld.backend.User.dto.Response.ParentLoginResponseDTO;
+import com.popoworld.backend.User.dto.Response.RefreshTokenResponseDTO;
 import com.popoworld.backend.User.repository.UserRepository;
-import com.popoworld.backend.User.dto.Request.*;
-import com.popoworld.backend.User.dto.Response.*;
 import com.popoworld.backend.global.token.JwtTokenProvider;
 import com.popoworld.backend.quest.service.QuestService;
 import com.popoworld.backend.quiz.child.service.QuizService;
@@ -52,7 +57,7 @@ public class UserServiceImpl implements UserService {
         user.setSex(requestDto.getSex());
         user.setAge(requestDto.getAge());
         user.setRole(requestDto.getRole());
-
+        user.setTutorialCompleted(false);
 
         // 역할에 따라 분기
         if ("Parent".equalsIgnoreCase(requestDto.getRole())) {
@@ -121,8 +126,7 @@ public class UserServiceImpl implements UserService {
                 throw new IllegalStateException("부모는 지정된 도메인에서만 로그인할 수 있어요.");
             }
         }
-
-
+        // 중복 로그인 시 기존 세션 차단
         redisTemplate.delete(loginKey(requestDto.getEmail()));
         redisTemplate.delete(refreshKey(requestDto.getEmail()));
 
@@ -207,10 +211,18 @@ public class UserServiceImpl implements UserService {
             );
         } else if ("Child".equalsIgnoreCase(user.getRole())) {
             return new ChildLoginResponseDTO(
-                    accessToken, refreshToken, user.getRole(), user.getName(), user.getPoint()
+                    accessToken, refreshToken, user.getRole(), user.getName(), user.getPoint(),user.isTutorialCompleted()
             );
         }
         throw new IllegalArgumentException("role 값은 'Parent' 또는 'Child'만 가능합니다.");
     }
 
+    @Override
+    public void completeTutorial(UUID userId){
+        User user = userRepository.findById(userId)
+                .orElseThrow(()-> new IllegalArgumentException("존재하지 않는 사용자입니다."));
+        user.setTutorialCompleted(true);
+        userRepository.save(user);
+    }
 }
+

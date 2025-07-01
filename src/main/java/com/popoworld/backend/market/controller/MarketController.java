@@ -39,7 +39,7 @@ public class MarketController {
     // ===== 공통 API =====
 
     @GetMapping
-    @Tag(name = "시장 자녀용 API") // 👈 수정됨
+    @Tag(name = "Child Marketplace") // 👈 수정됨
     @Operation(
             summary = "상점 아이템 조회",
             description = """
@@ -68,7 +68,7 @@ public class MarketController {
     // ===== 자녀용 API =====
 
     @PostMapping("/buy")
-    @Tag(name = "시장 자녀용 API") // 👈 수정됨
+    @Tag(name = "Child Marketplace") // 👈 수정됨
     @Operation(
             summary = "상품 구매",
             description = """
@@ -107,7 +107,7 @@ public class MarketController {
     }
 
     @GetMapping("/inventory")
-    @Tag(name = "시장 자녀용 API") // 👈 수정됨
+    @Tag(name = "Child Marketplace") // 👈 수정됨
     @Operation(
             summary = "인벤토리 조회",
             description = """
@@ -128,7 +128,7 @@ public class MarketController {
     }
 
     @PostMapping("/inventory/use")
-    @Tag(name = "시장 자녀용 API") // 👈 수정됨
+    @Tag(name = "Child Marketplace")
     @Operation(
             summary = "부모 상품 사용",
             description = """
@@ -161,7 +161,7 @@ public class MarketController {
     // ===== 부모용 API =====
 
     @PostMapping("/parent/products")
-    @Tag(name = "시장 부모용 API") // 👈 수정됨
+    @Tag(name = "Parent Marketplace")
     @Operation(
             summary = "부모 상품 등록",
             description = """
@@ -200,7 +200,7 @@ public class MarketController {
     }
 
     @GetMapping("/parent/products")
-    @Tag(name = "시장 부모용 API") // 👈 수정됨
+    @Tag(name = "Parent Marketplace")
     @Operation(
             summary = "내가 등록한 상품 목록",
             description = "부모가 등록한 상품 목록을 조회합니다. (REGISTERED 상태만 표시)"
@@ -218,7 +218,7 @@ public class MarketController {
     }
 
     @DeleteMapping("/parent/products/{productId}")
-    @Tag(name = "시장 부모용 API") // 👈 수정됨
+    @Tag(name = "Parent Marketplace")
     @Operation(
             summary = "부모 상품 삭제",
             description = """
@@ -248,7 +248,7 @@ public class MarketController {
     }
 
     @GetMapping("/parent/pending-approvals")
-    @Tag(name = "시장 부모용 API") // 👈 수정됨
+    @Tag(name = "Parent Marketplace")
     @Operation(
             summary = "자녀 상품 사용 승인 대기 목록",
             description = """
@@ -272,7 +272,7 @@ public class MarketController {
     }
 
     @PostMapping("/parent/approve/{productId}")
-    @Tag(name = "시장 부모용 API") // 👈 수정됨
+    @Tag(name = "Parent Marketplace")
     @Operation(
             summary = "자녀 상품 사용 승인",
             description = """
@@ -302,7 +302,7 @@ public class MarketController {
     }
 
     @GetMapping("/parent/approved-history")
-    @Tag(name = "시장 부모용 API") // 👈 수정됨
+    @Tag(name = "Parent Marketplace")
     @Operation(
             summary = "승인 완료된 상품 내역 조회",
             description = """
@@ -325,7 +325,7 @@ public class MarketController {
     }
 
     @GetMapping("/parent/child-inventory")
-    @Tag(name = "시장 부모용 API")
+    @Tag(name = "Parent Marketplace")
     @Operation(
             summary = "자녀 인벤토리 조회 (부모 상품만)",
             description = """

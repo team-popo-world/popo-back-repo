@@ -78,4 +78,12 @@ public class UserController {
         LoginResponseDTO dto = userService.getUserInfo(userId);
         return ResponseEntity.ok(dto);
     }
+
+    @Operation(summary = "튜토리얼 완료",description = "사용자의 튜토리얼을 완료 처리합니다.")
+    @PutMapping("/tutorial/complete")
+    public ResponseEntity<String> completeTutorial(){
+        UUID userId = getCurrentUserId();
+        userService.completeTutorial(userId);
+        return ResponseEntity.ok("튜토리얼이 완료되었습니다.");
+    }
 }

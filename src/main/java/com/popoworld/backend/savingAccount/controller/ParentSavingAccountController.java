@@ -19,7 +19,7 @@ import java.util.UUID;
 @RestController
 @RequestMapping("/api/parent/saving")
 @RequiredArgsConstructor
-@Tag(name = "부모용 저축통장 API", description = "부모가 자녀의 모든 저축통장(현재+과거)을 조회하는 API")
+@Tag(name = "Parent Saving Account", description = "부모가 자녀의 모든 저축통장(현재+과거)을 조회하는 API")
 @SecurityRequirement(name = "bearerAuth")
 public class ParentSavingAccountController {
 

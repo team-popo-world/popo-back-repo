@@ -24,7 +24,7 @@ import static com.popoworld.backend.global.token.SecurityUtil.getCurrentUserId;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/attendance")
-@Tag(name = "출석 관리", description = "출석 체크 및 현황 조회 API")
+@Tag(name = "Attendance", description = "출석 체크 및 현황 조회 API")
 public class AttendanceController {
     private final AttendanceService attendanceService;
 

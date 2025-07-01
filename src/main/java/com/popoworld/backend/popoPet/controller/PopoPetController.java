@@ -22,7 +22,7 @@ import static com.popoworld.backend.global.token.SecurityUtil.getCurrentUserId;
 @RestController
 @RequestMapping("/api/popo")
 @RequiredArgsConstructor
-@Tag(name = "포포 키우기 API", description = "포포 펫을 키우는 먹이주기 시스템")
+@Tag(name = "Popo Raising", description = "포포 펫을 키우는 먹이주기 시스템")
 
 public class PopoPetController {
         private final PopoService popoService;
