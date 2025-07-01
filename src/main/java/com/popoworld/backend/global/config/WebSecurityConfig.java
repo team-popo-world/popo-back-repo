@@ -33,6 +33,9 @@ public class WebSecurityConfig {
                 .httpBasic(AbstractHttpConfigurer::disable)
                 .csrf(AbstractHttpConfigurer::disable)
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+                .exceptionHandling(exception ->
+                        exception.authenticationEntryPoint(jwtAuthenticationEntryPoint)
+                )
                 .authorizeHttpRequests(auth ->
                         auth
                                 // Swagger 접근 가능
@@ -42,7 +45,7 @@ public class WebSecurityConfig {
                                         "/swagger-ui/**"
                                 ).permitAll()
                                 // 로그인 회원가입만 접근 가능 나머지는 인증 해야함
-                                .requestMatchers("/**",
+                                .requestMatchers(
                                         "/auth/signup",
                                         "/auth/login",
                                         "/auth/logout").permitAll()
@@ -54,9 +57,6 @@ public class WebSecurityConfig {
                                         "/api/push/subscribe",
                                         "/api/push/message").permitAll()
                                 .anyRequest().authenticated()
-                )
-                .exceptionHandling(exception ->
-                        exception.authenticationEntryPoint(jwtAuthenticationEntryPoint) // ✅ 추가
                 )
                 .addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider), UsernamePasswordAuthenticationFilter.class)
                 .build();

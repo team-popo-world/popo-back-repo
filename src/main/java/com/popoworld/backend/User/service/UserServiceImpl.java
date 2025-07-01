@@ -13,10 +13,8 @@ import com.popoworld.backend.User.repository.UserRepository;
 import com.popoworld.backend.global.token.JwtTokenProvider;
 import com.popoworld.backend.quest.service.QuestService;
 import com.popoworld.backend.quiz.child.service.QuizService;
-import com.popoworld.backend.webpush.entity.WebPush;
 import com.popoworld.backend.webpush.repository.PushRepository;
 import com.popoworld.backend.webpush.service.PushSubService;
-import com.popoworld.backend.webpush.service.PushSubscriptionService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -24,7 +22,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-
 import java.time.Duration;
 import java.util.List;
 import java.util.UUID;
@@ -129,8 +126,7 @@ public class UserServiceImpl implements UserService {
                 throw new IllegalStateException("부모는 지정된 도메인에서만 로그인할 수 있어요.");
             }
         }
-        
-
+        // 중복 로그인 시 기존 세션 차단
         redisTemplate.delete(loginKey(requestDto.getEmail()));
         redisTemplate.delete(refreshKey(requestDto.getEmail()));
 
