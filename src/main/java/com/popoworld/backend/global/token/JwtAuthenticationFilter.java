@@ -45,7 +45,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             // 세션 ID 불일치 → 다른 브라우저에서 로그인됨
             if (redisSessionId == null || !redisSessionId.equals(tokenSessionId)) {
                 response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-                response.setContentType("application/json");
+                response.setContentType("application/json; charset=UTF-8");
                 response.getWriter().write("{\"error\": \"중복 로그인으로 세션이 만료되었습니다.\"}");
                 return;
             }
