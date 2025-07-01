@@ -2,19 +2,14 @@ package com.popoworld.backend.User.service;
 
 import com.popoworld.backend.User.User;
 import com.popoworld.backend.User.dto.ChildInfoDTO;
-import com.popoworld.backend.User.repository.RefreshTokenRepository;
 import com.popoworld.backend.User.repository.UserRepository;
 import com.popoworld.backend.User.dto.Request.*;
 import com.popoworld.backend.User.dto.Response.*;
 import com.popoworld.backend.global.token.JwtTokenProvider;
-import com.popoworld.backend.global.token.RefreshToken;
-import com.popoworld.backend.quest.repository.QuestRepository;
 import com.popoworld.backend.quest.service.QuestService;
 import com.popoworld.backend.quiz.child.service.QuizService;
-import com.popoworld.backend.webpush.entity.WebPush;
 import com.popoworld.backend.webpush.repository.PushRepository;
 import com.popoworld.backend.webpush.service.PushSubService;
-import com.popoworld.backend.webpush.service.PushSubscriptionService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -22,11 +17,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-
 import java.time.Duration;
-import java.time.Instant;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -129,7 +121,7 @@ public class UserServiceImpl implements UserService {
                 throw new IllegalStateException("부모는 지정된 도메인에서만 로그인할 수 있어요.");
             }
         }
-        
+
 
         redisTemplate.delete(loginKey(requestDto.getEmail()));
         redisTemplate.delete(refreshKey(requestDto.getEmail()));
