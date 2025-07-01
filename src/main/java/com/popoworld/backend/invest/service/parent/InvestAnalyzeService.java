@@ -38,7 +38,7 @@ public class InvestAnalyzeService {
         return webClient.get()
                 .uri(uriBuilder -> uriBuilder
                         .scheme("http")
-                        .host("43.203.175.69")
+                        .host("15.164.235.203")
                         .port(8002)
                         .path("/api/invest" + path)
                         .queryParam("userId", childId.toString())

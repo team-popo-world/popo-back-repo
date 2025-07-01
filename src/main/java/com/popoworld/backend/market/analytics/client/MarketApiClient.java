@@ -18,7 +18,7 @@ public class MarketApiClient {
 
     public Object getDashboardData(UUID childId, Integer days) {
         log.info("🏠 대시보드 데이터 API 호출 시작: childId={}, days={}", childId, days);
-        log.info("🌐 요청 URL: http://43.203.175.69:8001/api/dashboard/{}?days={}", childId, days);
+        log.info("🌐 요청 URL: http://15.164.235.203:8001/api/dashboard/{}?days={}", childId, days);
 
         try {
             return purchaseWebClient.get()

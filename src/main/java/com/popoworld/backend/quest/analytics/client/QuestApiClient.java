@@ -13,7 +13,7 @@ import java.util.UUID;
 @Slf4j
 public class QuestApiClient {
     private final RestTemplate restTemplate;
-    private final String questApiBaseUrl = "http://43.203.175.69:8000";
+    private final String questApiBaseUrl = "http://15.164.235.203:8000";
 
     //일일퀘스트 완료율 불러오기
     public Object getDailyCompletionRate(UUID childId,String period){
