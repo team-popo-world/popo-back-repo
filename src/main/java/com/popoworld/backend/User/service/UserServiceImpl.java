@@ -127,8 +127,7 @@ public class UserServiceImpl implements UserService {
             }
         }
         // 중복 로그인 시 기존 세션 차단
-        redisTemplate.delete(loginKey(requestDto.getEmail()));
-        redisTemplate.delete(refreshKey(requestDto.getEmail()));
+        redisTemplate.delete("session:" + requestDto.getEmail());
 
         // 토큰 생성
         String accessToken = jwtTokenProvider.generateAccessToken(user);
@@ -136,7 +135,6 @@ public class UserServiceImpl implements UserService {
 
 
         // RefreshToken 저장
-        redisTemplate.opsForValue().set(loginKey(requestDto.getEmail()), "true", ACCESS_TTL);
         redisTemplate.opsForValue().set(refreshKey(requestDto.getEmail()), refreshToken, REFRESH_TTL);
 
         // 로그인 응답
