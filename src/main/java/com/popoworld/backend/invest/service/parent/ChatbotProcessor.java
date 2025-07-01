@@ -48,7 +48,7 @@ public class ChatbotProcessor {
         long startTime1 = System.currentTimeMillis();
         log.info("❗ 시간시간시간시간시간시간시간시간시간시간시간시간시간시간 {}, {}", userId,startTime1);
         webClient.post()
-                .uri("http://43.203.175.69:8004/edit-scenario")
+                .uri("http://15.164.235.203:8004/edit-scenario")
                 .bodyValue(apiRequest)
                 .retrieve()
                 .bodyToMono(String.class)

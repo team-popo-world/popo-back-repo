@@ -42,7 +42,7 @@ public class QuizKafkaConsumer {
 
             // 3. FastAPI 호출
             webClient.post()
-                    .uri("http://43.203.175.69:8003/quiz/{difficulty}/{topic}", difficulty, topic)
+                    .uri("http://15.164.235.203:8003/quiz/{difficulty}/{topic}", difficulty, topic)
                     .retrieve()
                     .bodyToMono(String.class)
                     .subscribe(response -> {
