@@ -1,5 +1,6 @@
 package com.popoworld.backend.webpush.entity;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
@@ -16,6 +17,7 @@ public class WebPush {
     @GeneratedValue
     private Long id;
 
+    @Column(unique = true)
     private UUID userId;  // 로그인 유저 ID
     private String endpoint;
     private String p256dh;
