@@ -27,13 +27,9 @@ public class UserController {
 
     @Operation(summary = "회원가입", description = "새로운 유저를 등록합니다.")
     @PostMapping("/signup")
-    public ResponseEntity<?> signup(@RequestBody @Valid SignupRequestDTO requestDto) {
-        try {
-            userService.signup(requestDto);
-            return ResponseEntity.ok().build();
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().build();
-        }
+    public ResponseEntity<?> signup(@RequestBody @Valid SignupRequestDTO requestDto) throws Exception {
+        userService.signup(requestDto);
+        return ResponseEntity.ok().build();
     }
 
     @Operation(summary = "로그인", description = "이메일과 비밀번호로 로그인하고 JWT 토큰을 반환합니다.")
