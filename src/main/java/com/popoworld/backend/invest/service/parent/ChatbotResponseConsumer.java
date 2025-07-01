@@ -28,12 +28,12 @@ public class ChatbotResponseConsumer {
     @KafkaListener(topics = "chatbot.response", groupId = "chatbot-response-group")
     public void onResponse(@Payload String message) throws JsonProcessingException {
         long startTime = System.currentTimeMillis();
-        log.info("❗ 시간시간시간시간시간시간시간시간시간시간시간시간시간시간", startTime);
+
         try {
             ChatbotResponsePayload payload = objectMapper.readValue(message, ChatbotResponsePayload.class);
             UUID userId = payload.getUserId();
             String story = payload.getStory();
-
+            log.info("❗ 시간시간시간시간시간시간시간시간시간시간시간시간시간시간 {}, {}", userId,startTime);
             // 바로 story 사용 (Redis 조회 X)
             sseEmitters.send(userId, story);
 

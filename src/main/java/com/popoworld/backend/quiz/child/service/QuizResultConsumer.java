@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.popoworld.backend.quiz.child.entity.QuizHistory;
 import com.popoworld.backend.quiz.child.repository.QuizRepository;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
@@ -19,6 +20,7 @@ public class QuizResultConsumer {
     private final QuizRepository quizRepository;
     private final ObjectMapper objectMapper;
 
+    @Transactional
     @KafkaListener(topics = "quiz-history", groupId = "quiz-consumer-group")
     public void consume(@Payload String message) {
         try {

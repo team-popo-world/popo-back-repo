@@ -29,12 +29,11 @@ public class ChatbotProcessor {
 
     public void process(ChatKafkaPayload payload) throws JsonProcessingException {
         long startTime = System.currentTimeMillis();
-        log.info("❗ 시간시간시간시간시간시간시간시간시간시간시간시간시간시간", startTime);
         UUID userId = payload.getUserId();
         UUID requestId = payload.getRequestId();
         String redisKey = "scenario:temp:" + userId;
         String cached = redisTemplate.opsForValue().get(redisKey);
-
+        log.info("❗ 시간시간시간시간시간시간시간시간시간시간시간시간시간시간 {}, {}", userId,startTime);
         if (cached == null) {
             log.warn("⛔ Redis에 캐시 없음 (userId: {})", userId);
             return;
@@ -47,7 +46,7 @@ public class ChatbotProcessor {
                 .editRequest(payload.getEditRequest())
                 .build();
         long startTime1 = System.currentTimeMillis();
-        log.info("❗ 시간시간시간시간시간시간시간시간시간시간시간시간시간시간", startTime1);
+        log.info("❗ 시간시간시간시간시간시간시간시간시간시간시간시간시간시간 {}, {}", userId,startTime1);
         webClient.post()
                 .uri("http://43.203.175.69:8004/edit-scenario")
                 .bodyValue(apiRequest)
@@ -57,7 +56,7 @@ public class ChatbotProcessor {
 
                         result -> {
                             long startTime2 = System.currentTimeMillis();
-                            log.info("❗ 시간시간시간시간시간시간시간시간시간시간시간시간시간시간", startTime2);
+                            log.info("❗ 시간시간시간시간시간시간시간시간시간시간시간시간시간시간 {}, {}", userId,startTime2);
                             redisTemplate.opsForValue().set(redisKey, result, Duration.ofMinutes(30));
 
                             ChatbotResponsePayload responsePayload = ChatbotResponsePayload.builder()

@@ -35,7 +35,6 @@ public class InvestAnalyzeService {
         }
         long start = System.currentTimeMillis();
 
-        log.info("fastapi 요처 시작 fastapi 요처 시작fastapi 요처 시작fastapi 요처 시작fastapi 요처 시작fastapi 요처 시작fastapi 요처 시작fastapi 요처 시작fastapi 요처 시작fastapi 요처 시작fastapi 요처 시작fastapi 요처 시작 {}", start);
         return webClient.get()
                 .uri(uriBuilder -> uriBuilder
                         .scheme("http")

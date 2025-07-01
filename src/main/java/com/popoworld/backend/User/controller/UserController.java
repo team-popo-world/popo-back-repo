@@ -6,6 +6,7 @@ import com.popoworld.backend.User.dto.Response.RefreshTokenResponseDTO;
 import com.popoworld.backend.User.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
@@ -37,8 +38,9 @@ public class UserController {
 
     @Operation(summary = "로그인", description = "이메일과 비밀번호로 로그인하고 JWT 토큰을 반환합니다.")
     @PostMapping("/login")
-    public ResponseEntity<LoginResponseDTO> login(@RequestBody @Valid LoginRequestDTO requestDto) {
-        LoginResponseDTO responseDto = userService.login(requestDto);
+    public ResponseEntity<LoginResponseDTO> login(@RequestBody @Valid LoginRequestDTO requestDto,
+                                                  HttpServletRequest request) {
+        LoginResponseDTO responseDto = userService.login(requestDto, request);
 
         HttpHeaders headers = new HttpHeaders();
         headers.set("Authorization", "Bearer " + responseDto.getAccessToken());

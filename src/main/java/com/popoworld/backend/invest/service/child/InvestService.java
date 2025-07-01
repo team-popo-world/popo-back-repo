@@ -42,7 +42,6 @@ public class InvestService {
     @Transactional
     public ChapterDataResponse getChapterDataAndCreateSession(String chapterId){
         UUID childId = getCurrentUserId();
-        log.info("111111111111111111111111111111111111111111111111111111111111111111111");
         //1. 유저 조회 및 시드머니 확인
         User child = userRepository.findById(childId)
                 .orElseThrow(()-> new RuntimeException("사용자를 찾을 수 없습니다."));
@@ -56,7 +55,6 @@ public class InvestService {
             throw new RuntimeException("포인트가 부족합니다. 필요 포인트: " + chapter.getSeedMoney() +
                     ", 보유 포인트: " + child.getPoint());
         }
-        log.info("111111111111111111111111111111111111111111111111111111111111111111111");
 
         // 4. 시나리오 조회(우선순위: 해당 아이의 커스텀 시나리오 > 기본 시나리오)
         InvestScenario selectedScenario = null;
@@ -82,7 +80,6 @@ public class InvestService {
                 selectedScenario = defaultScenarios.get(randomIndex);
             }
         }
-        log.info("111111111111111111111111111111111111111111111111111111111111111111111");
 
         // 시나리오를 찾지 못한 경우
         if(selectedScenario == null){
@@ -114,7 +111,6 @@ public class InvestService {
 
         // 7. 세션 저장
         investSessionRepository.save(newSession);
-        log.info("111111111111111111111111111111111111111111111111111111111111111111111");
 
         // 8. 응답 DTO 반환
         return new ChapterDataResponse(sessionId.toString(), selectedScenario.getStory());
