@@ -26,8 +26,6 @@ public class InvestScenario {
     @Column(name = "scenario_name")
     private String scenarioName;
 
-//    private UUID chapterId;
-
     @Column(columnDefinition = "TEXT")
     private String story;
 
@@ -45,6 +43,4 @@ public class InvestScenario {
     @JoinColumn(name = "chapter_id")
     private InvestChapter investChapter;
 
-    @OneToMany(mappedBy = "investScenario", cascade = CascadeType.PERSIST, fetch = FetchType.LAZY)
-    private List<InvestSession> investSessions;
 }

@@ -31,7 +31,5 @@ public class InvestSession {
 
     private Integer clusterNum;
 
-    @ManyToOne(fetch= FetchType.LAZY)
-    @JoinColumn(name="scenario_id")
-    private InvestScenario investScenario;
+    private UUID scenarioId;
 }
