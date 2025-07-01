@@ -1,23 +1,17 @@
 package com.popoworld.backend.quiz.child.controller;
 
-import com.popoworld.backend.global.token.JwtTokenProvider;
-import com.popoworld.backend.invest.service.parent.ChatbotSseEmitters;
 import com.popoworld.backend.quiz.child.dto.QuizResponseDTO;
 import com.popoworld.backend.quiz.child.dto.QuizResultDTO;
 import com.popoworld.backend.quiz.child.dto.QuizRewardRequestDTO;
-import com.popoworld.backend.quiz.child.entity.Quiz;
-import com.popoworld.backend.quiz.child.entity.QuizHistory;
 import com.popoworld.backend.quiz.child.service.QuizKafkaProducer;
 import com.popoworld.backend.quiz.child.service.QuizService;
 import io.swagger.v3.oas.annotations.Operation;
-import jakarta.servlet.http.HttpServletRequest;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
-import java.nio.file.AccessDeniedException;
 import java.util.UUID;
 
 import static com.popoworld.backend.global.token.SecurityUtil.getCurrentUserId;
@@ -26,6 +20,7 @@ import static com.popoworld.backend.global.token.SecurityUtil.getCurrentUserId;
 @RestController
 @RequestMapping("/api/quiz")
 @RequiredArgsConstructor
+@Tag(name="Quiz")
 public class QuizController {
 
     private final QuizService quizService;

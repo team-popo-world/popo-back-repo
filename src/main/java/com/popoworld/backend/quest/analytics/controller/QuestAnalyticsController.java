@@ -26,7 +26,7 @@ import static com.popoworld.backend.global.token.SecurityUtil.getCurrentUserId;
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/api/questAnalytics")
-@Tag(name = "퀘스트 분석 API", description = "부모가 자녀의 퀘스트 수행 패턴을 분석할 수 있는 ML 기반 분석 데이터 제공")
+@Tag(name = "Quest Analysis", description = "부모가 자녀의 퀘스트 수행 패턴을 분석할 수 있는 ML 기반 분석 데이터 제공")
 @SecurityRequirement(name = "accessToken")
 public class QuestAnalyticsController {
 
