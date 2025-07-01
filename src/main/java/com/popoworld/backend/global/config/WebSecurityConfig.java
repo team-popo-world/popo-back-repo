@@ -53,9 +53,7 @@ public class WebSecurityConfig {
                                 .requestMatchers("/api/quiz/sse").permitAll()
                                 .requestMatchers("/api/scenario/default").permitAll()
                                 .requestMatchers("/auth/token/refresh").permitAll()
-                                .requestMatchers("/api/push/public-key",
-                                        "/api/push/subscribe",
-                                        "/api/push/message").permitAll()
+                                .requestMatchers("/api/push/public-key").permitAll()
                                 .anyRequest().authenticated()
                 )
                 .addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider), UsernamePasswordAuthenticationFilter.class)
